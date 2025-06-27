@@ -1,0 +1,26 @@
+TYPES:
+  Actor:
+    character: Персонаж
+    minion: Миньон
+    rival: Соперник
+    nemesis: Немесис
+    vehicle: Транспорт
+
+  Item:
+
+labels:
+  approach:
+    push: Нажим
+    maneuver: Маневр
+  focus: Фокус
+
+Genesys:
+  Archetype:
+    Abilities: Способности архетипа
+  Adversary:
+    Abilities: Способности
+    None: Нет
+  Labels:
+    SpecialAbilities: Нарративные способности
+  Notifications:
+    NotEnoughResource: Недостаточно ресурса!

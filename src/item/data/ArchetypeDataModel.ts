@@ -7,6 +7,7 @@
  */
 import BaseItemDataModel from '@/item/data/BaseItemDataModel';
 import GenesysItem from '@/item/GenesysItem';
+import { ApproachesContainer } from '@/data/Approaches';
 
 type CharacteristicsContainer = {
 	brawn: number;
@@ -18,10 +19,15 @@ type CharacteristicsContainer = {
 };
 
 export default abstract class ArchetypeDataModel extends BaseItemDataModel {
-	/**
-	 * Characteristics values granted by the Archetype.
-	 */
-	abstract characteristics: CharacteristicsContainer;
+        /**
+         * Approach values granted by the Archetype.
+         */
+        abstract approaches: ApproachesContainer;
+
+        /**
+         * Characteristics values granted by the Archetype.
+         */
+        abstract characteristics: CharacteristicsContainer;
 
 	/**
 	 * Wound Threshold granted by the Archetype.
@@ -43,15 +49,20 @@ export default abstract class ArchetypeDataModel extends BaseItemDataModel {
 	 */
 	abstract grantedItems: GenesysItem<BaseItemDataModel>[];
 
-	static override defineSchema() {
-		const fields = foundry.data.fields;
+        static override defineSchema() {
+                const fields = foundry.data.fields;
 
-		return {
-			...super.defineSchema(),
-			characteristics: new fields.SchemaField({
-				brawn: new fields.NumberField({ initial: 2, integer: true }),
-				agility: new fields.NumberField({ initial: 2, integer: true }),
-				intellect: new fields.NumberField({ initial: 2, integer: true }),
+                return {
+                        ...super.defineSchema(),
+                        approaches: new fields.SchemaField({
+                                push: new fields.NumberField({ initial: 0, integer: true }),
+                                maneuver: new fields.NumberField({ initial: 0, integer: true }),
+                                focus: new fields.NumberField({ initial: 0, integer: true }),
+                        }),
+                        characteristics: new fields.SchemaField({
+                                brawn: new fields.NumberField({ initial: 2, integer: true }),
+                                agility: new fields.NumberField({ initial: 2, integer: true }),
+                                intellect: new fields.NumberField({ initial: 2, integer: true }),
 				cunning: new fields.NumberField({ initial: 2, integer: true }),
 				willpower: new fields.NumberField({ initial: 2, integer: true }),
 				presence: new fields.NumberField({ initial: 2, integer: true }),

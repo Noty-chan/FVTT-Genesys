@@ -6,6 +6,7 @@
  * @file Base data shared by all Adversaries.
  */
 import { Characteristic, CharacteristicsContainer } from '@/data/Characteristics';
+import { Approach, ApproachesContainer } from '@/data/Approaches';
 import { Defense } from '@/data/Actors';
 import { TokenAttributeDetails } from '@/token/GenesysTokenDocument';
 
@@ -31,7 +32,8 @@ type RelevantTypes = {
 };
 
 export default abstract class AdversaryDataModel extends foundry.abstract.DataModel {
-	abstract characteristics: CharacteristicsContainer;
+        abstract characteristics: CharacteristicsContainer;
+        abstract approaches: ApproachesContainer;
 	abstract soak: number;
 	abstract defense: Defense;
 	abstract description: string;
@@ -69,11 +71,16 @@ export default abstract class AdversaryDataModel extends foundry.abstract.DataMo
 	static override defineSchema() {
 		const fields = foundry.data.fields;
 
-		return {
-			characteristics: new fields.SchemaField({
-				brawn: new fields.NumberField({ integer: true, initial: 0 }),
-				agility: new fields.NumberField({ integer: true, initial: 0 }),
-				intellect: new fields.NumberField({ integer: true, initial: 0 }),
+                return {
+                        approaches: new fields.SchemaField({
+                                push: new fields.NumberField({ integer: true, initial: 0 }),
+                                maneuver: new fields.NumberField({ integer: true, initial: 0 }),
+                                focus: new fields.NumberField({ integer: true, initial: 0 }),
+                        }),
+                        characteristics: new fields.SchemaField({
+                                brawn: new fields.NumberField({ integer: true, initial: 0 }),
+                                agility: new fields.NumberField({ integer: true, initial: 0 }),
+                                intellect: new fields.NumberField({ integer: true, initial: 0 }),
 				cunning: new fields.NumberField({ integer: true, initial: 0 }),
 				willpower: new fields.NumberField({ integer: true, initial: 0 }),
 				presence: new fields.NumberField({ integer: true, initial: 0 }),
