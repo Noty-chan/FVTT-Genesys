@@ -175,7 +175,6 @@ async function openActorSheet(actor: GenesysActor) {
 								<span class="skill-rank">{{ skill.systemData.rank }}</span>
                                                                 <SkillRanks
                                                                         :skill-value="details.actor.type === 'minion' ? Math.max(0, (details.actor.systemData as MinionDataModel).remainingMembers - 1) : skill.systemData.rank"
-                                                                        :characteristic-value="0"
                                                                 />
 							</div>
 						</div>
@@ -203,10 +202,9 @@ async function openActorSheet(actor: GenesysActor) {
 							<div>{{ actorRoleSkill.role }}</div>
 							<div class="skill-content-details-skillRank">{{ actorRoleSkill.skill.systemData.rank }}</div>
 							<a @click="rollSkillForActor(actorRoleSkill.actor as GenesysActor<NonVehicleDataModel>, actorRoleSkill.skill as GenesysItem<SkillDataModel>)">
-								<SkillRanks
-									:skill-value="actorRoleSkill.actor.type === 'minion' ? Math.max(0, (actorRoleSkill.actor.systemData as MinionDataModel).remainingMembers - 1) : actorRoleSkill.skill.systemData.rank"
-									:characteristic-value="(actorRoleSkill.actor.systemData as NonVehicleDataModel).characteristics[actorRoleSkill.skill.systemData.characteristic]"
-								/>
+                                                                <SkillRanks
+                                                                        :skill-value="actorRoleSkill.actor.type === 'minion' ? Math.max(0, (actorRoleSkill.actor.systemData as MinionDataModel).remainingMembers - 1) : actorRoleSkill.skill.systemData.rank"
+                                                                />
 							</a>
 						</div>
 					</div>

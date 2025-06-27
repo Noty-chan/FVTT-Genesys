@@ -1,16 +1,14 @@
 <script lang="ts" setup>
 defineProps<{
-	skillValue: number;
-	characteristicValue: number;
+        skillValue: number;
 }>();
 </script>
 
 <template>
-	<div class="skill-ranks">
-		<div v-for="i in Math.max(0, 5 - Math.max(skillValue, characteristicValue))" :key="i" class="rank" />
-		<div v-for="i in Math.abs(skillValue - characteristicValue)" :key="i" class="rank ability" />
-		<div v-for="i in Math.min(skillValue, characteristicValue)" :key="i" class="rank proficiency" />
-	</div>
+        <div class="skill-ranks">
+                <div v-for="i in Math.max(0, 5 - skillValue)" :key="`a${i}`" class="rank" />
+                <div v-for="i in skillValue" :key="`p${i}`" class="rank proficiency" />
+        </div>
 </template>
 
 <style lang="scss" scoped>
@@ -34,13 +32,9 @@ defineProps<{
 			border-radius: 4px;
 		}
 
-		&.proficiency {
-			background: #ffe800;
-		}
-
-		&.ability {
-			background: #41ad49;
-		}
-	}
+                &.proficiency {
+                        background: #ffe800;
+                }
+        }
 }
 </style>

@@ -16,17 +16,6 @@ const system = computed(() => context.data.item.systemData);
 	<BasicItemSheet show-effects-tab>
 		<template v-slot:data>
 			<section class="data-grid">
-				<div class="row">
-					<label><Localized label="Genesys.Labels.Characteristic" /></label>
-					<select name="system.characteristic" :value="system.characteristic">
-						<option value="brawn"><Localized label="Genesys.Characteristics.Brawn" /></option>
-						<option value="agility"><Localized label="Genesys.Characteristics.Agility" /></option>
-						<option value="intellect"><Localized label="Genesys.Characteristics.Intellect" /></option>
-						<option value="cunning"><Localized label="Genesys.Characteristics.Cunning" /></option>
-						<option value="willpower"><Localized label="Genesys.Characteristics.Willpower" /></option>
-						<option value="presence"><Localized label="Genesys.Characteristics.Presence" /></option>
-					</select>
-				</div>
 
 				<div class="row">
 					<label><Localized label="Genesys.Labels.Category" /></label>
