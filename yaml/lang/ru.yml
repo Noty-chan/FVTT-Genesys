@@ -395,124 +395,124 @@ Genesys:
 
   # Misc. Unsorted Labels (to be cleaned up later)
   Labels:
-    Name: Name
-    CharacterName: Character Name
-    SpeciesArchetype: Species/Archetype
-    Career: Career
-    Soak: Soak
-    SoakValue: Soak Value
-    Wounds: Wounds
-    WoundThreshold: Wound Threshold
-    Strain: Strain
-    StrainThreshold: Strain Threshold
-    Defense: Defense
-    Threshold: Threshold
-    Current: Current
-    DefenseMelee: Melee
-    MeleeDefense: Melee Defense
-    DefenseRanged: Ranged
-    RangedDefense: Ranged Defense
-    TotalXP: Total XP
-    AvailableXP: Available XP
-    Characteristic: Characteristic
-    IsMagicSkill: Is Magic Skill
-    Source: Source
-    GeneralSkills: General Skills
-    MagicSkills: Magic Skills
-    CombatSkills: Combat Skills
-    SocialSkills: Social Skills
-    KnowledgeSkills: Knowledge Skills
-    Category: Category
-    Skills: Skills
-    Delete: Delete
-    Edit: Edit
-    NoCareer: No career selected - drag one over!
-    NoArchetype: No archetype selected - drag one over!
-    MarkCareerSkill: Mark As Career Skill
-    UnmarkCareerSkill: Unmark As Career Skill
-    MarkSuperCharacteristic: Mark As Super-Characteristic
-    UnmarkSuperCharacteristic: Unmark As Super-Characteristic
-    Motivations: Motivations
-    Strength: Strength
-    Flaw: Flaw
-    Desire: Desire
-    Fear: Fear
-    CharacterIllustration: Character Illustration
-    CharacterDescription: Character Description
-    Pronouns: Pronouns
-    Age: Age
-    Height: Height
-    Build: Build
-    Hair: Hair
-    Eyes: Eyes
-    NotableFeatures: Notable Features
-    Notes: Notes
-    XPJournal: XP Journal
-    Tier: Tier
-    Activation: Activation
-    Rank: Rank
-    Ranked: Ranked
-    Active: Active
-    Passive: Passive
-    Yes: Yes
-    No: No
-    Talents: Talents
+    Name: Имя
+    CharacterName: Имя персонажа
+    SpeciesArchetype: Вид/архетип
+    Career: Карьера
+    Soak: Защита
+    SoakValue: Значение защиты
+    Wounds: Раны
+    WoundThreshold: Предел ран
+    Strain: Стресс
+    StrainThreshold: Предел стресса
+    Defense: Защита
+    Threshold: Предел
+    Current: Текущее
+    DefenseMelee: Ближний бой
+    MeleeDefense: Защита в ближнем бою
+    DefenseRanged: Дальний бой
+    RangedDefense: Защита в дальнем бою
+    TotalXP: Всего опыта
+    AvailableXP: Доступный опыт
+    Characteristic: Характеристика
+    IsMagicSkill: Магический навык
+    Source: Источник
+    GeneralSkills: Общие навыки
+    MagicSkills: Магические навыки
+    CombatSkills: Боевые навыки
+    SocialSkills: Социальные навыки
+    KnowledgeSkills: Знания
+    Category: Категория
+    Skills: Навыки
+    Delete: Удалить
+    Edit: Изменить
+    NoCareer: Карьера не выбрана - перетащите сюда!
+    NoArchetype: Архетип не выбран - перетащите сюда!
+    MarkCareerSkill: Отметить как карьерный навык
+    UnmarkCareerSkill: Снять отметку карьерного навыка
+    MarkSuperCharacteristic: Пометить как сверххарактеристику
+    UnmarkSuperCharacteristic: Снять пометку сверххарактеристики
+    Motivations: Мотивации
+    Strength: Сильная сторона
+    Flaw: Недостаток
+    Desire: Желание
+    Fear: Страх
+    CharacterIllustration: Иллюстрация персонажа
+    CharacterDescription: Описание персонажа
+    Pronouns: Местоимения
+    Age: Возраст
+    Height: Рост
+    Build: Телосложение
+    Hair: Волосы
+    Eyes: Глаза
+    NotableFeatures: Особенности
+    Notes: Заметки
+    XPJournal: Журнал опыта
+    Tier: Уровень
+    Activation: Активация
+    Rank: Ранг
+    Ranked: С ранжированием
+    Active: Активный
+    Passive: Пассивный
+    Yes: Да
+    No: Нет
+    Talents: Таланты
     SpecialAbilities: Нарративные способности
-    TierCount: Tier {tier}
-    DeletedItemData: 'ERR: Deleted item {name}'
-    Add: Add
-    Encumbrance: Encumbrance
-    Price: Price
-    Rarity: Rarity
-    Damage: Damage
-    DamageCharacteristic: Damage From Characteristic
-    Critical: Critical
-    Range: Range
-    Quantity: Quantity
-    EncumbranceThreshold: Encumbrance Threshold
-    Encumbered: Encumbered!
-    RankUp: Rank Up
-    RankDown: Rank Down
-    FreeRankUp: Rank Up (Free)
-    FreeRankDown: Rank Down (Free)
-    IsRated: Is Rated?
-    Qualities: Qualities
-    Severity: Severity
-    Attacks: Attacks
-    Armor: Armor
-    CriticalInjuries: Critical Injuries
-    CriticalHits: Critical Hits
-    Injury: Injury
-    Hit: Hit
-    Skill: Skill
-    Crit: Crit
-    Special: Special
-    GroupSize: Group Size
-    SkillNotFound: Skill Not Found
-    IsInitiative: Initiative Skill?
-    Equipped: Equipped
-    Carried: Carried
-    Dropped: Dropped
-    NotApplicable: N/A
-    EffectiveTier: Effective Tier
-    Silhouette: Silhouette
-    Speed: Speed
-    Handling: Handling
-    HullTrauma: Hull Trauma
-    HullTraumaThreshold: Hull Trauma Threshold
-    SystemStrain: System Strain
-    SystemStrainThreshold: System Strain Threshold
-    Illustration: Illustration
-    Complement: Complement
-    Consumables: Consumables
-    PassengerCapacity: Passenger Capacity
-    EncumbranceCapacity: Encumbrance Capacity
-    Information: Information
-    Passengers: Passengers
-    Role: Role
-    Roles: Roles
-    OverCapacity: Over Capacity!
-    RoleSkills: Role Skills
-    FiringArc: Firing Arc
-    Select: Select
-    PerformCheck: Perform Check
+    TierCount: Уровень {tier}
+    DeletedItemData: 'ERR: удалённый предмет {name}'
+    Add: Добавить
+    Encumbrance: Переносимость
+    Price: Цена
+    Rarity: Редкость
+    Damage: Урон
+    DamageCharacteristic: Урон от характеристики
+    Critical: Крит
+    Range: Дальность
+    Quantity: Количество
+    EncumbranceThreshold: Предел переносимости
+    Encumbered: Перегруз!
+    RankUp: Повысить ранг
+    RankDown: Понизить ранг
+    FreeRankUp: Повысить ранг (Free)
+    FreeRankDown: Понизить ранг (Free)
+    IsRated: Имеет рейтинг?
+    Qualities: Свойства
+    Severity: Тяжесть
+    Attacks: Атаки
+    Armor: Броня
+    CriticalInjuries: Критические травмы
+    CriticalHits: Критические попадания
+    Injury: Травма
+    Hit: Попадание
+    Skill: Навык
+    Crit: Крит
+    Special: Особое
+    GroupSize: Размер группы
+    SkillNotFound: Навык не найден
+    IsInitiative: Навык инициативы?
+    Equipped: Надето
+    Carried: Несется
+    Dropped: Брошено
+    NotApplicable: н/д
+    EffectiveTier: Фактический уровень
+    Silhouette: Силуэт
+    Speed: Скорость
+    Handling: Управление
+    HullTrauma: Повреждения корпуса
+    HullTraumaThreshold: Предел повреждений корпуса
+    SystemStrain: Системный износ
+    SystemStrainThreshold: Предел износа системы
+    Illustration: Иллюстрация
+    Complement: Команда
+    Consumables: Запасы
+    PassengerCapacity: Вместимость пассажиров
+    EncumbranceCapacity: Грузоподъемность
+    Information: Информация
+    Passengers: Пассажиры
+    Role: Роль
+    Roles: Роли
+    OverCapacity: Перегруз!
+    RoleSkills: Навыки роли
+    FiringArc: Сектор обстрела
+    Select: Выбрать
+    PerformCheck: Сделать проверку
