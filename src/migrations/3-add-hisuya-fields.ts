@@ -31,7 +31,7 @@ export async function migrate_AddHisuyaFields() {
 
 	for (const actor of actors) {
                 const update: Record<string, unknown> = {};
-                const approaches = (actor.system as CharacterDataModel | AdversaryDataModel).approaches;
+               const approaches = (actor.system as CharacterDataModel | AdversaryDataModel).approaches;
                 if (!approaches) {
                         update['system.approaches'] = { push: 0, maneuver: 0, focus: 0 };
                 } else {
