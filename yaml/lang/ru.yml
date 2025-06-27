@@ -521,6 +521,4 @@ Genesys:
     Resource: Ресурс
     UseAbility: Использовать
     CustomFields: Доп. поля
-  Notifications:
-    NotEnoughResource: Недостаточно ресурса!
 
