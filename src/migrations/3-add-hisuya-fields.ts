@@ -30,13 +30,13 @@ export async function migrate_AddHisuyaFields() {
 	const actors = actorsInWorld.concat(actorsInCompendium);
 
 	for (const actor of actors) {
-		const update: Record<string, unknown> = {};
-		const approaches = actor.system.approaches as any;
-		if (!approaches) {
-			update['system.approaches'] = { push: 0, maneuver: 0, focus: 0 };
-		} else {
-			if (approaches.push === undefined) update['system.approaches.push'] = 0;
-			if (approaches.maneuver === undefined) update['system.approaches.maneuver'] = 0;
+                const update: Record<string, unknown> = {};
+                const approaches = (actor.system as CharacterDataModel | AdversaryDataModel).approaches;
+                if (!approaches) {
+                        update['system.approaches'] = { push: 0, maneuver: 0, focus: 0 };
+                } else {
+                        if (approaches.push === undefined) update['system.approaches.push'] = 0;
+                        if (approaches.maneuver === undefined) update['system.approaches.maneuver'] = 0;
 			if (approaches.focus === undefined) update['system.approaches.focus'] = 0;
 		}
 
