@@ -40,7 +40,7 @@ export type InitiativeRollData = {
 	rejectPromise: () => void;
 };
 
-type DicePromptOptions = {
+export type DicePromptOptions = {
         rollType?: RollType;
         difficulty?: string;
         rollUnskilled?: Approach;
