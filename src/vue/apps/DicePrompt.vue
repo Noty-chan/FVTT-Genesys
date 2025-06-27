@@ -2,6 +2,7 @@
 import { inject, onMounted, ref, toRaw } from 'vue';
 import { DicePromptContext, type AttackRollData, RollType, type InitiativeRollData, CALCULATE_CHANCE_WORKER_NAME } from '@/app/DicePrompt';
 import { Characteristic } from '@/data/Characteristics';
+import { Approach } from '@/data/Approaches';
 import GenesysRoller from '@/dice/GenesysRoller';
 import GenesysItem from '@/item/GenesysItem';
 import SkillDataModel from '@/item/data/SkillDataModel';
@@ -64,7 +65,6 @@ const SORT_ORDER: Record<SimplePoolEntity, number> = {
 	Threat: 5,
 };
 
-const USE_UNCOUPLED_SKILLS = CONFIG.genesys.settings.uncoupleSkillsFromCharacteristics;
 const USE_SUPER_CHARACTERISTICS = CONFIG.genesys.settings.useSuperCharacteristics;
 const CHANCE_TO_SUCCEED_BY_SIMULATION_NUM_ROLLS = CONFIG.genesys.settings.showChanceToSucceedFromSimulations.amountOfRolls;
 const USE_CHANCE_TO_SUCCEED_BY_PERMUTATION = CONFIG.genesys.settings.showChanceToSucceedFromPermutations;
@@ -85,6 +85,7 @@ const poolModifications = ref<DicePoolModifications>({
 const availableSkills = ref<GenesysItem<SkillDataModel>[]>([]);
 const selectedSkill = ref<AlsoNone<GenesysItem<SkillDataModel>>>();
 const selectedCharacteristic = ref<AlsoNone<Characteristic>>();
+const selectedApproach = ref<Approach>(Approach.Push);
 const probabilityOfSuccess = ref<AlsoNone<string>>();
 
 const useSuperCharacteristic = ref(false);
@@ -107,8 +108,8 @@ onMounted(() => {
 				return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
 			})
 		: [];
-	selectedSkill.value = context.skillName ? (availableSkills.value.find((skill) => skill.name === context.skillName) as AlsoNone<GenesysItem<SkillDataModel>>) : undefined;
-	selectedCharacteristic.value = selectedSkill.value?.systemData.characteristic ?? context.rollUnskilled;
+        selectedSkill.value = context.skillName ? (availableSkills.value.find((skill) => skill.name === context.skillName) as AlsoNone<GenesysItem<SkillDataModel>>) : undefined;
+        selectedCharacteristic.value = context.rollUnskilled;
 
 	calculatePoolModificationsForSkill();
 	buildDicePool();
@@ -238,28 +239,26 @@ function calculatePoolModificationsForSkill() {
 }
 
 function buildDicePool() {
-	const actor = context.actor as AlsoNone<GenesysActor<NonVehicleActorDataModel>>;
-	let proficiencyDice;
-	let abilityDice;
-	let usesSuperCharacteristic = USE_SUPER_CHARACTERISTICS;
+        const actor = context.actor as AlsoNone<GenesysActor<NonVehicleActorDataModel>>;
+        let proficiencyDice;
+        let abilityDice;
+        let usesSuperCharacteristic = false;
 
-	// Step 1: Applying Skills and Characteristics
-	if (actor) {
-		const characteristicValue = selectedCharacteristic.value ? actor.systemData.characteristics[selectedCharacteristic.value] : 0;
-		let skillValue = selectedSkill.value?.systemData.rank ?? 0;
+        // Step 1: Applying Skills and Characteristics
+        if (actor) {
+                const characteristicValue = selectedApproach.value ? actor.systemData.approaches[selectedApproach.value] : 0;
+                let skillValue = selectedSkill.value?.systemData.rank ?? 0;
 
 		if (actor.type === 'minion' && selectedSkill.value) {
 			skillValue = Math.clamp((actor.systemData as MinionDataModel).remainingMembers - 1, 0, 5);
 		}
 
-		proficiencyDice = Math.min(characteristicValue, skillValue);
-		abilityDice = Math.max(characteristicValue, skillValue) - proficiencyDice;
-		usesSuperCharacteristic &&= !!selectedCharacteristic.value && actor.systemData.superCharacteristics.has(selectedCharacteristic.value);
-	} else {
-		proficiencyDice = 0;
-		abilityDice = 0;
-		usesSuperCharacteristic &&= useSuperCharacteristic.value;
-	}
+                proficiencyDice = Math.min(characteristicValue, skillValue);
+                abilityDice = Math.max(characteristicValue, skillValue) - proficiencyDice;
+        } else {
+                proficiencyDice = 0;
+                abilityDice = 0;
+        }
 
 	const dicePool = {
 		dice: {
@@ -392,19 +391,25 @@ async function approximateProbability() {
 }
 
 function onSkillChange(event: Event) {
-	const selectedOption = event.currentTarget as HTMLSelectElement;
-	selectedSkill.value = availableSkills.value.find((s) => s.id === selectedOption.value) as AlsoNone<GenesysItem<SkillDataModel>>;
-	selectedCharacteristic.value = selectedSkill.value?.systemData.characteristic;
+        const selectedOption = event.currentTarget as HTMLSelectElement;
+        selectedSkill.value = availableSkills.value.find((s) => s.id === selectedOption.value) as AlsoNone<GenesysItem<SkillDataModel>>;
 
-	calculatePoolModificationsForSkill();
-	buildDicePool();
+        calculatePoolModificationsForSkill();
+        buildDicePool();
 }
 
 function onCharacteristicChange(event: Event) {
-	const selectedOption = event.currentTarget as HTMLSelectElement;
-	selectedCharacteristic.value = selectedOption.value !== '-' ? (selectedOption.value as Characteristic) : undefined;
+        const selectedOption = event.currentTarget as HTMLSelectElement;
+        selectedCharacteristic.value = selectedOption.value !== '-' ? (selectedOption.value as Characteristic) : undefined;
 
-	buildDicePool();
+        buildDicePool();
+}
+
+function onApproachChange(event: Event) {
+        const selectedOption = event.currentTarget as HTMLSelectElement;
+        selectedApproach.value = selectedOption.value as Approach;
+
+        buildDicePool();
 }
 
 function getOrderedDice(category: DieCategory) {
@@ -445,14 +450,14 @@ function removeManualChange(index: number) {
 async function rollPool() {
 	const formula = compileDiceFormula();
 	const symbols = compileSymbolsData();
-	const baseRollData = {
-		actor: toRaw(context.actor),
-		characteristic: selectedCharacteristic.value,
-		usesSuperCharacteristic: currentDicePool.value.usesSuperCharacteristic,
-		skillId: selectedSkill.value?.id ?? '-',
-		formula,
-		symbols,
-	};
+        const baseRollData = {
+                actor: toRaw(context.actor),
+                approach: selectedApproach.value,
+                usesSuperCharacteristic: currentDicePool.value.usesSuperCharacteristic,
+                skillId: selectedSkill.value?.id ?? '-',
+                formula,
+                symbols,
+        };
 
 	switch (context.rollType) {
 		case RollType.Simple:
@@ -552,9 +557,14 @@ async function rollPool() {
 			</div>
 		</div>
 
-		<div v-if="context.actor" class="characteristic-skill-row">
-			<!-- Characteristic Selection -->
-			<select name="characteristic" :value="selectedCharacteristic ?? '-'" :disabled="selectedSkill && !USE_UNCOUPLED_SKILLS" @change="onCharacteristicChange">
+                <div v-if="context.actor" class="characteristic-skill-row">
+                        <!-- Approach Selection -->
+                        <select name="approach" :value="selectedApproach" @change="onApproachChange">
+                                <option v-for="[label, value] in Object.entries(Approach)" :key="value" :value="value"><Localized :label="`Genesys.Approach.${label.capitalize()}`" /></option>
+                        </select>
+
+                        <!-- Characteristic Selection -->
+                        <select name="characteristic" :value="selectedCharacteristic ?? '-'" @change="onCharacteristicChange">
 				<option value="-">—</option>
 				<option v-for="[charLabel, charValue] in Object.entries(Characteristic)" :key="charValue" :value="charValue"><Localized :label="`Genesys.Characteristics.${charLabel}`" /></option>
 			</select>
@@ -562,7 +572,7 @@ async function rollPool() {
 			<!-- Skill Selection -->
 			<select name="skill" :value="selectedSkill?.id ?? '-'" @change="onSkillChange">
 				<option value="-">—</option>
-				<option v-for="skill in availableSkills" :key="skill.id" :value="skill.id">{{ skill.name }} (<Localized :label="`Genesys.CharacteristicAbbr.${skill.systemData.characteristic.capitalize()}`" />)</option>
+                                <option v-for="skill in availableSkills" :key="skill.id" :value="skill.id">{{ skill.name }}</option>
 			</select>
 		</div>
 
@@ -644,7 +654,7 @@ async function rollPool() {
 
 .dice-prompt {
 	display: grid;
-	grid-template-columns: 2fr 1fr 2fr;
+        grid-template-columns: 1fr 1fr 2fr;
 	grid-template-rows: /* Header */ auto /* Dice Pool */ 1fr /* Skill & Characteristic */ auto;
 	gap: 0.5em;
 
@@ -671,18 +681,23 @@ async function rollPool() {
 		display: contents;
 	}
 
-	[name='characteristic'],
-	[name='skill'] {
-		grid-row: 3 / span 1;
-	}
+        [name='approach'],
+        [name='characteristic'],
+        [name='skill'] {
+                grid-row: 3 / span 1;
+        }
 
-	[name='characteristic'] {
-		grid-column: 1 / span 1;
-	}
+        [name='approach'] {
+                grid-column: 1 / span 1;
+        }
 
-	[name='skill'] {
-		grid-column: 2 / span 2;
-	}
+        [name='characteristic'] {
+                grid-column: 2 / span 1;
+        }
+
+        [name='skill'] {
+                grid-column: 3 / span 1;
+        }
 
 	.super-characteristic-row {
 		grid-row: 3 / span 1;

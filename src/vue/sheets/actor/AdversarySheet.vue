@@ -14,6 +14,7 @@ import EquipmentDataModel from '@/item/data/EquipmentDataModel';
 import ArmorDataModel from '@/item/data/ArmorDataModel';
 import SkillRanks from '@/vue/components/character/SkillRanks.vue';
 import DicePrompt, { RollType } from '@/app/DicePrompt';
+import ApproachEditor from '@/vue/components/character/ApproachEditor.vue';
 import ContextMenu from '@/vue/components/ContextMenu.vue';
 import MenuItem from '@/vue/components/MenuItem.vue';
 import Enriched from '@/vue/components/Enriched.vue';
@@ -252,8 +253,9 @@ onBeforeUpdate(updateEffects);
 
 		<section class="sheet-body">
 			<div class="tab" data-tab="stats">
-				<section class="stats-tab">
-					<div class="description-area">
+                                <section class="stats-tab">
+                                        <ApproachEditor />
+                                        <div class="description-area">
 						<div :class="`adversary-description ${system.description.trim() === '' ? 'empty' : ''}`">
 							<Editor name="system.description" :content="system.description" button />
 							<div class="source" v-html="source" />
