@@ -28,10 +28,10 @@ languages:
     name: Русский
     path: lang/ru.json
 packs:
-  - name: crb-skills
-    label: Core Skills
+  - name: hisuya-skills
+    label: Hisuya Skills
     system: genesys
-    path: ./packs/crb-skills.db
+    path: ./packs/hisuya-skills.db
     type: Item
 socket: true
 url: https://github.com/Mezryss/FVTT-Genesys
