@@ -4,9 +4,30 @@ import { inject, computed, toRaw } from 'vue';
 import { ActorSheetContext, RootContext } from '@/vue/SheetContext';
 import Localized from '@/vue/components/Localized.vue';
 import Editor from '@/vue/components/Editor.vue';
+import CustomField from '@/vue/components/CustomField.vue';
 
 const context = inject<ActorSheetContext<VehicleDataModel>>(RootContext)!;
 const system = computed(() => toRaw(context.data.actor).systemData);
+const customFields = computed(() =>
+        toRaw(context.data.actor).getFlag('genesys', 'customFields') ?? []
+);
+
+async function addField() {
+        const fields = [...customFields.value, { id: foundry.utils.randomID(), label: '', type: 'text', value: '' }];
+        await toRaw(context.data.actor).setFlag('genesys', 'customFields', fields);
+}
+
+async function updateField(index: number, payload: { label?: string; value?: any }) {
+        const fields = [...customFields.value];
+        fields[index] = { ...fields[index], ...payload };
+        await toRaw(context.data.actor).setFlag('genesys', 'customFields', fields);
+}
+
+async function deleteField(index: number) {
+        const fields = [...customFields.value];
+        fields.splice(index, 1);
+        await toRaw(context.data.actor).setFlag('genesys', 'customFields', fields);
+}
 </script>
 
 <template>
@@ -55,11 +76,19 @@ const system = computed(() => toRaw(context.data.actor).systemData);
 
 				<div class="split-underline"><span /><span /></div>
 
-				<label><Localized label="Genesys.Labels.Source" /></label>
-				<input type="text" name="system.source" :value="system.source" />
-			</div>
-		</section>
-	</section>
+                                <label><Localized label="Genesys.Labels.Source" /></label>
+                                <input type="text" name="system.source" :value="system.source" />
+
+                                <section class="custom-fields">
+                                        <div class="header"><Localized label="Genesys.Labels.CustomFields" /></div>
+                                        <div v-for="(field, index) in customFields" :key="field.id" class="field">
+                                                <CustomField :field="field" @update="updateField(index, $event)" @delete="deleteField(index)" />
+                                        </div>
+                                        <a @click="addField" class="add-field"><i class="fas fa-plus"></i></a>
+                                </section>
+                        </div>
+                </section>
+        </section>
 </template>
 
 <style lang="scss" scoped>
@@ -171,15 +200,32 @@ const system = computed(() => toRaw(context.data.actor).systemData);
 				}
 			}
 
-			.double-details {
-				display: contents;
+                        .double-details {
+                                display: contents;
 
-				& > label,
-				& > input {
-					grid-column: auto / span 1;
-				}
-			}
-		}
-	}
+                                & > label,
+                                & > input {
+                                        grid-column: auto / span 1;
+                                }
+                        }
+
+                        .custom-fields {
+                                grid-column: 1 / span all;
+                                display: flex;
+                                flex-direction: column;
+                                gap: 0.25em;
+                                margin-top: 0.5em;
+
+                                .field {
+                                        display: flex;
+                                        width: 100%;
+                                }
+
+                                .add-field {
+                                        align-self: flex-start;
+                                }
+                        }
+                }
+        }
 }
 </style>
