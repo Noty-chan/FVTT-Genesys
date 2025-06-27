@@ -65,7 +65,6 @@ const SORT_ORDER: Record<SimplePoolEntity, number> = {
 	Threat: 5,
 };
 
-const USE_UNCOUPLED_SKILLS = CONFIG.genesys.settings.uncoupleSkillsFromCharacteristics;
 const USE_SUPER_CHARACTERISTICS = CONFIG.genesys.settings.useSuperCharacteristics;
 const CHANCE_TO_SUCCEED_BY_SIMULATION_NUM_ROLLS = CONFIG.genesys.settings.showChanceToSucceedFromSimulations.amountOfRolls;
 const USE_CHANCE_TO_SUCCEED_BY_PERMUTATION = CONFIG.genesys.settings.showChanceToSucceedFromPermutations;
@@ -109,8 +108,8 @@ onMounted(() => {
 				return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
 			})
 		: [];
-	selectedSkill.value = context.skillName ? (availableSkills.value.find((skill) => skill.name === context.skillName) as AlsoNone<GenesysItem<SkillDataModel>>) : undefined;
-	selectedCharacteristic.value = selectedSkill.value?.systemData.characteristic ?? context.rollUnskilled;
+        selectedSkill.value = context.skillName ? (availableSkills.value.find((skill) => skill.name === context.skillName) as AlsoNone<GenesysItem<SkillDataModel>>) : undefined;
+        selectedCharacteristic.value = context.rollUnskilled;
 
 	calculatePoolModificationsForSkill();
 	buildDicePool();
@@ -392,12 +391,11 @@ async function approximateProbability() {
 }
 
 function onSkillChange(event: Event) {
-	const selectedOption = event.currentTarget as HTMLSelectElement;
-	selectedSkill.value = availableSkills.value.find((s) => s.id === selectedOption.value) as AlsoNone<GenesysItem<SkillDataModel>>;
-	selectedCharacteristic.value = selectedSkill.value?.systemData.characteristic;
+        const selectedOption = event.currentTarget as HTMLSelectElement;
+        selectedSkill.value = availableSkills.value.find((s) => s.id === selectedOption.value) as AlsoNone<GenesysItem<SkillDataModel>>;
 
-	calculatePoolModificationsForSkill();
-	buildDicePool();
+        calculatePoolModificationsForSkill();
+        buildDicePool();
 }
 
 function onCharacteristicChange(event: Event) {
@@ -566,7 +564,7 @@ async function rollPool() {
                         </select>
 
                         <!-- Characteristic Selection -->
-                        <select name="characteristic" :value="selectedCharacteristic ?? '-'" :disabled="selectedSkill && !USE_UNCOUPLED_SKILLS" @change="onCharacteristicChange">
+                        <select name="characteristic" :value="selectedCharacteristic ?? '-'" @change="onCharacteristicChange">
 				<option value="-">—</option>
 				<option v-for="[charLabel, charValue] in Object.entries(Characteristic)" :key="charValue" :value="charValue"><Localized :label="`Genesys.Characteristics.${charLabel}`" /></option>
 			</select>
@@ -574,7 +572,7 @@ async function rollPool() {
 			<!-- Skill Selection -->
 			<select name="skill" :value="selectedSkill?.id ?? '-'" @change="onSkillChange">
 				<option value="-">—</option>
-				<option v-for="skill in availableSkills" :key="skill.id" :value="skill.id">{{ skill.name }} (<Localized :label="`Genesys.CharacteristicAbbr.${skill.systemData.characteristic.capitalize()}`" />)</option>
+                                <option v-for="skill in availableSkills" :key="skill.id" :value="skill.id">{{ skill.name }}</option>
 			</select>
 		</div>
 
