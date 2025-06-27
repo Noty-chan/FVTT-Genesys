@@ -526,6 +526,7 @@ Genesys:
     ApproachPush: Нажим
     ApproachManeuver: Маневр
     ApproachFocus: Фокус
+    CustomFields: Доп. поля
   Notifications:
     NotEnoughResource: Недостаточно ресурса!
 

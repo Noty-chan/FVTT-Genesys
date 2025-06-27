@@ -9,10 +9,14 @@ import Editor from '@/vue/components/Editor.vue';
 import AwardXPPrompt from '@/app/AwardXPPrompt';
 import XPContainer from '@/vue/components/character/XPContainer.vue';
 import NarrativeAbilities from '@/vue/sheets/actor/character/NarrativeAbilities.vue';
+import CustomField from '@/vue/components/CustomField.vue';
 
 const context = inject<ActorSheetContext<CharacterDataModel>>(RootContext)!;
 
 const system = computed(() => context.data.actor.systemData);
+const customFields = computed(() =>
+        toRaw(context.data.actor).getFlag('genesys', 'customFields') ?? []
+);
 
 async function addXPJournalEntry() {
 	const award = await AwardXPPrompt.promptForXPAward();
@@ -30,6 +34,23 @@ async function addXPJournalEntry() {
 			},
 		],
 	});
+}
+
+async function addField() {
+        const fields = [...customFields.value, { id: foundry.utils.randomID(), label: '', type: 'text', value: '' }];
+        await toRaw(context.data.actor).setFlag('genesys', 'customFields', fields);
+}
+
+async function updateField(index: number, payload: { label?: string; value?: any }) {
+        const fields = [...customFields.value];
+        fields[index] = { ...fields[index], ...payload };
+        await toRaw(context.data.actor).setFlag('genesys', 'customFields', fields);
+}
+
+async function deleteField(index: number) {
+        const fields = [...customFields.value];
+        fields.splice(index, 1);
+        await toRaw(context.data.actor).setFlag('genesys', 'customFields', fields);
 }
 </script>
 
@@ -141,6 +162,14 @@ async function addXPJournalEntry() {
                         <div class="header"><Localized label="Genesys.Labels.Notes" /></div>
 
                         <Editor name="system.notes" :content="system.notes" button />
+                </section>
+
+                <section class="custom-fields">
+                        <div class="header"><Localized label="Genesys.Labels.CustomFields" /></div>
+                        <div v-for="(field, index) in customFields" :key="field.id" class="field">
+                                <CustomField :field="field" @update="updateField(index, $event)" @delete="deleteField(index)" />
+                        </div>
+                        <a @click="addField" class="add-field"><i class="fas fa-plus"></i></a>
                 </section>
 
                 <NarrativeAbilities />
@@ -382,7 +411,7 @@ async function addXPJournalEntry() {
 	}
 
 	.entries-header,
-	.entry {
+.entry {
 		display: grid;
 		grid-template-columns: /* Name */ auto /* Spacer */ 1fr /* Amount */ auto /* Delete */ 1.5rem;
 		justify-items: center;
@@ -408,9 +437,25 @@ async function addXPJournalEntry() {
 			grid-column: 3 / span 1;
 		}
 
-		&:nth-of-type(2n) {
-			background: transparentize(colors.$light-blue, 0.8);
-		}
-	}
+                &:nth-of-type(2n) {
+                        background: transparentize(colors.$light-blue, 0.8);
+                }
+        }
+
+        .custom-fields {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25em;
+                margin-top: 0.5em;
+
+                .field {
+                        display: flex;
+                        width: 100%;
+                }
+
+                .add-field {
+                        align-self: flex-start;
+                }
+        }
 }
 </style>
