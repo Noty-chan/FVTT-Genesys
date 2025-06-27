@@ -1,0 +1,57 @@
+{
+  id hisuya-genesys,
+  title Хисуя (Genesys Hybrid),
+  description (ALPHA) Simplified Genesys ruleset for the Hisuya campaign.,
+  version 0.2.14,
+
+  compatibility {
+    minimum 12,
+    verified 12,
+    maximum 12
+  },
+
+  authors [
+    {
+      name Noty-chan
+    }
+  ],
+
+  scripts [
+    scriptscontainer-query-polyfillcontainer-query-polyfill.modern.js
+  ],
+
+  esmodules [
+    Genesys.js
+  ],
+
+  styles [
+    style.css
+  ],
+
+  languages [
+    { lang en, name English,   path langen.json },
+    { lang fr, name Français, path langfr.json },
+    { lang es, name Español,  path langes.json },
+    { lang ru, name Русский,  path langru.json }
+  ],
+
+  packs [
+    {
+      name hisuya-skills,
+      label Hisuya Skills,
+      system hisuya-genesys,
+      path .packshisuya-skills.db,
+      type Item
+    }
+  ],
+
+  socket true,
+
+  url httpsgithub.comNoty-chanFVTT-Genesys,
+  bugs httpsgithub.comNoty-chanFVTT-Genesysissues,
+  changelog httpsgithub.comNoty-chanFVTT-GenesysblobmainCHANGELOG.md,
+  license httpsgithub.comNoty-chanFVTT-GenesysblobmainLICENSE,
+
+  manifest httpsgithub.comNoty-chanFVTT-Genesysreleaseslatestdownloadsystem.json,
+  download httpsgithub.comNoty-chanFVTT-Genesysreleaseslatestdownloadsystem.zip
+}
