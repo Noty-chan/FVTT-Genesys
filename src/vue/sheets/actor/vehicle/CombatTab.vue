@@ -16,6 +16,7 @@ import Enriched from '@/vue/components/Enriched.vue';
 import Tooltip from '@/vue/components/Tooltip.vue';
 
 import SelectCharacterSkillPrompt, { CharacterSkillOption } from '@/app/SelectCharacterSkillPrompt';
+import { Approach } from '@/data/Approaches';
 
 const rootContext = inject<ActorSheetContext<VehicleDataModel>>(RootContext)!;
 
@@ -97,11 +98,13 @@ async function pickAttackerAndRollAttack(weapon: GenesysItem<VehicleWeaponDataMo
 		return;
 	}
 
-	await DicePrompt.promptForRoll(selectAttacker.actor, selectAttacker.skill.name, {
-		rollType: RollType.Attack,
-		rollData: { weapon },
-		...(selectAttacker.skill.pack && { rollUnskilled: selectAttacker.skill.systemData.characteristic }),
-	});
+        await DicePrompt.promptForRoll(selectAttacker.actor, selectAttacker.skill.name, {
+                rollType: RollType.Attack,
+                rollData: { weapon },
+                ...(selectAttacker.skill.pack && {
+                        rollUnskilled: selectAttacker.skill.systemData.characteristic as unknown as Approach,
+                }),
+        });
 }
 
 async function repairHit(criticalHit: GenesysItem<InjuryDataModel>) {
@@ -138,10 +141,12 @@ async function repairHit(criticalHit: GenesysItem<InjuryDataModel>) {
 		return;
 	}
 
-	await DicePrompt.promptForRoll(selectRepairer.actor, selectRepairer.skill.name, {
-		difficulty: SEVERITY_TO_DIFFICULTY[criticalHit.systemData.severity],
-		...(selectRepairer.skill.pack && { rollUnskilled: selectRepairer.skill.systemData.characteristic }),
-	});
+        await DicePrompt.promptForRoll(selectRepairer.actor, selectRepairer.skill.name, {
+                difficulty: SEVERITY_TO_DIFFICULTY[criticalHit.systemData.severity],
+                ...(selectRepairer.skill.pack && {
+                        rollUnskilled: selectRepairer.skill.systemData.characteristic as unknown as Approach,
+                }),
+        });
 }
 </script>
 
