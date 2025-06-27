@@ -518,6 +518,7 @@ Genesys:
     PerformCheck: Сделать проверку
     Resource: Ресурс
     UseAbility: Использовать
+    CustomFields: Доп. поля
   Notifications:
     NotEnoughResource: Недостаточно ресурса!
 

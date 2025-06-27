@@ -21,9 +21,13 @@ import WeaponDataModel from '@/item/data/WeaponDataModel';
 import { Characteristic as CharacteristicType } from '@/data/Characteristics';
 import InjuryDataModel from '@/item/data/InjuryDataModel';
 import { DragTransferData, constructDragTransferTypeFromData } from '@/data/DragTransferData';
+import CustomField from '@/vue/components/CustomField.vue';
 
 const context = inject<ActorSheetContext<AdversaryDataModel>>(RootContext)!;
 const system = computed(() => toRaw(context.data.actor).systemData);
+const customFields = computed(() =>
+        toRaw(context.data.actor).getFlag('genesys', 'customFields') ?? []
+);
 
 const skills = computed(() => toRaw(context.data.actor).items.filter((i) => i.type === 'skill') as GenesysItem<SkillDataModel>[]);
 const talents = computed(() => toRaw(context.data.actor).items.filter((i) => i.type === 'talent') as GenesysItem<TalentDataModel>[]);
@@ -89,7 +93,24 @@ async function editItem(item: GenesysItem) {
 }
 
 async function deleteItem(item: GenesysItem) {
-	await toRaw(item).delete();
+        await toRaw(item).delete();
+}
+
+async function addField() {
+        const fields = [...customFields.value, { id: foundry.utils.randomID(), label: '', type: 'text', value: '' }];
+        await toRaw(context.data.actor).setFlag('genesys', 'customFields', fields);
+}
+
+async function updateField(index: number, payload: { label?: string; value?: any }) {
+        const fields = [...customFields.value];
+        fields[index] = { ...fields[index], ...payload };
+        await toRaw(context.data.actor).setFlag('genesys', 'customFields', fields);
+}
+
+async function deleteField(index: number) {
+        const fields = [...customFields.value];
+        fields.splice(index, 1);
+        await toRaw(context.data.actor).setFlag('genesys', 'customFields', fields);
 }
 
 async function adjustTalentOrSkillRank(item: GenesysItem<TalentDataModel> | GenesysItem<SkillDataModel>, adjustment: number) {
@@ -572,11 +593,19 @@ onBeforeUpdate(updateEffects);
 						</div>
 					</div>
 
-					<div class="data-row">
-						<label><Localized label="Genesys.Labels.Source" /></label>
-						<input type="text" name="system.source" :value="system.source" />
-					</div>
-				</section>
+                                        <div class="data-row">
+                                                <label><Localized label="Genesys.Labels.Source" /></label>
+                                                <input type="text" name="system.source" :value="system.source" />
+                                        </div>
+
+                                        <section class="custom-fields">
+                                                <div class="header"><Localized label="Genesys.Labels.CustomFields" /></div>
+                                                <div v-for="(field, index) in customFields" :key="field.id" class="field">
+                                                        <CustomField :field="field" @update="updateField(index, $event)" @delete="deleteField(index)" />
+                                                </div>
+                                                <a @click="addField" class="add-field"><i class="fas fa-plus"></i></a>
+                                        </section>
+                                </section>
 			</div>
 
 			<div class="tab" data-tab="effects">
@@ -867,9 +896,9 @@ onBeforeUpdate(updateEffects);
 			}
 		}
 
-		.data-row {
-			display: grid;
-			grid-template-columns: minmax(min-content, 30%) 1fr;
+                .data-row {
+                        display: grid;
+                        grid-template-columns: minmax(min-content, 30%) 1fr;
 			align-items: center;
 			border-top: 1px dashed black;
 			padding: 0.25em;
@@ -889,10 +918,26 @@ onBeforeUpdate(updateEffects);
 				grid-column: 2 / span 1;
 			}
 
-			& > label {
-				grid-column: 1 / span 1;
-			}
-		}
-	}
+                        & > label {
+                                grid-column: 1 / span 1;
+                        }
+                }
+
+                .custom-fields {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 0.25em;
+                        margin-top: 0.5em;
+
+                        .field {
+                                display: flex;
+                                width: 100%;
+                        }
+
+                        .add-field {
+                                align-self: flex-start;
+                        }
+                }
+        }
 }
 </style>
