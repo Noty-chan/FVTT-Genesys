@@ -10,6 +10,8 @@ import AdversaryDataModel from '@/actor/data/AdversaryDataModel';
 import MinionDataModel from '@/actor/data/MinionDataModel';
 
 import DicePrompt from '@/app/DicePrompt';
+import type { DicePromptOptions } from '@/app/DicePrompt';
+import { Approach } from '@/data/Approaches';
 import Localized from '@/vue/components/Localized.vue';
 import SkillRanks from '@/vue/components/character/SkillRanks.vue';
 
@@ -133,10 +135,13 @@ function sortNames([left]: [string, any], [right]: [string, any]) {
 }
 
 async function rollSkillForActor(actor: GenesysActor, skill: GenesysItem<SkillDataModel>) {
-	if (actor.isOwner) {
-		const promptOptions = skill.pack ? { rollUnskilled: skill.systemData.characteristic } : {};
-		await DicePrompt.promptForRoll(actor, skill.name, promptOptions);
-	}
+        if (actor.isOwner) {
+                const promptOptions: DicePromptOptions | undefined =
+                        skill.pack
+                                ? { rollUnskilled: skill.systemData.characteristic as unknown as Approach }
+                                : undefined;
+                await DicePrompt.promptForRoll(actor, skill.name, promptOptions);
+        }
 }
 
 async function openActorSheet(actor: GenesysActor) {
