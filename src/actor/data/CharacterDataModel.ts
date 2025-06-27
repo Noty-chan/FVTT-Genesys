@@ -223,7 +223,7 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
                 }
 
                 if (this.resource < ability.cost) {
-                        ui.notifications.warn('Hisuya.NotEnoughResource');
+                        ui.notifications.warn('Genesys.Notifications.NotEnoughResource');
                         return;
                 }
 
