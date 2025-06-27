@@ -91,14 +91,14 @@ Genesys:
       Simple: 'Rolling<i class="fas fa-star {superChar}"></i>...'
       Initiative: 'Rolling Initiative with <strong>{skill}<i class="fas fa-star {superChar}"></i></strong>...'
       Characteristic: Rolling <strong>{characteristic}</strong>...
-      Approach: Rolling <strong>{approach}</strong>...
+      Approach: 'Бросок <strong>{approach}</strong>...'
       Skill: 'Rolling <strong>{skill} ({characteristic}<i class="fas fa-star {superChar}"></i>)</strong>...'
-      SkillApproach: 'Rolling <strong>{skill} ({approach})</strong>...'
+      SkillApproach: 'Бросок <strong>{skill} ({approach})</strong>...'
       SkillWithoutCharacteristic: Rolling <strong>{skill}</strong>...
       AttackCharacteristic: Attacking with <strong>{name}</strong> using <strong>{characteristic}</strong>!
-      AttackApproach: Attacking with <strong>{name}</strong> using <strong>{approach}</strong>!
+      AttackApproach: 'Атака <strong>{name}</strong> с использованием <strong>{approach}</strong>!'
       AttackSkill: 'Attacking with <strong>{name}</strong> using <strong>{skill} ({characteristic}<i class="fas fa-star {superChar}"></i>)</strong>!'
-      AttackSkillApproach: 'Attacking with <strong>{name}</strong> using <strong>{skill} ({approach})</strong>!'
+      AttackSkillApproach: 'Атака <strong>{name}</strong> с использованием <strong>{skill} ({approach})</strong>!'
       AttackSkillWithoutCharacteristic: Attacking with <strong>{name}</strong> using <strong>{skill}</strong>!
     Attack:
       Critical: Critical
