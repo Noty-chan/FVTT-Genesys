@@ -8,7 +8,7 @@ test('hisuya skills pack file exists', () => {
 
 test('default compendium constant updated', () => {
   const cfg = fs.readFileSync('src/config.ts', 'utf8');
-  assert.ok(cfg.includes("genesys.hisuya-skills"));
+  assert.ok(cfg.includes("hisuya-genesys.hisuya-skills"));
 });
 
 test('system.yml references hisuya pack', () => {
