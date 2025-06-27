@@ -7,9 +7,19 @@ import gulpYaml from 'gulp-yaml';
 import gulpZip from 'gulp-zip';
 
 export function zip() {
-        return src('dist/**/*')
-                .pipe(gulpZip('system.zip'))
-                .pipe(dest('.'));
+	let version;
+	try {
+		const systemJsonFile = fs.readFileSync('dist/system.json', { encoding: 'utf8' });
+		const systemJson = JSON.parse(systemJsonFile);
+		version = systemJson['version'];
+	} catch {
+		version = 'unknown';
+	}
+
+	return src('dist/**/*')
+		.pipe(gulpZip(`system.zip`))
+		.pipe(dest('.'));
+
 }
 
 export function clean() {
