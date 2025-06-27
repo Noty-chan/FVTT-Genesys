@@ -26,5 +26,7 @@ Genesys:
     None: Нет
   Labels:
     SpecialAbilities: Нарративные способности
+    Resource: Ресурс
+    UseAbility: Использовать
   Notifications:
     NotEnoughResource: Недостаточно ресурса!

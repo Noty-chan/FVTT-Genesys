@@ -8,6 +8,7 @@ import Localized from '@/vue/components/Localized.vue';
 import Editor from '@/vue/components/Editor.vue';
 import AwardXPPrompt from '@/app/AwardXPPrompt';
 import XPContainer from '@/vue/components/character/XPContainer.vue';
+import NarrativeAbilities from '@/vue/sheets/actor/character/NarrativeAbilities.vue';
 
 const context = inject<ActorSheetContext<CharacterDataModel>>(RootContext)!;
 
@@ -136,14 +137,16 @@ async function addXPJournalEntry() {
 			</div>
 		</section>
 
-		<section class="player-notes">
-			<div class="header"><Localized label="Genesys.Labels.Notes" /></div>
+                <section class="player-notes">
+                        <div class="header"><Localized label="Genesys.Labels.Notes" /></div>
 
-			<Editor name="system.notes" :content="system.notes" button />
-		</section>
+                        <Editor name="system.notes" :content="system.notes" button />
+                </section>
 
-		<section class="xp-journal">
-			<div class="header"><Localized label="Genesys.Labels.XPJournal" /></div>
+                <NarrativeAbilities />
+
+                <section class="xp-journal">
+                        <div class="header"><Localized label="Genesys.Labels.XPJournal" /></div>
 
 			<div class="entries-header">
 				<div><Localized label="Genesys.RewardsPrompt.Reason" /></div>
