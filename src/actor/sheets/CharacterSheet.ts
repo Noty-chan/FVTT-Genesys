@@ -401,7 +401,7 @@ export default class CharacterSheet extends VueSheet(GenesysActorSheet<Character
 	 *
 	 * @param career
 	 */
-	async removeCareer(career: GenesysItem<CareerDataModel>) {
+        async removeCareer(career: GenesysItem<CareerDataModel>) {
 		const careerData = career.systemData;
 
 		// Unmark Career Skills
@@ -423,6 +423,26 @@ export default class CharacterSheet extends VueSheet(GenesysActorSheet<Character
 			}),
 		);
 
-		await career.delete();
-	}
+                await career.delete();
+        }
+
+        /**
+         * Create a new skill on the actor if one with the same name doesn't exist.
+         *
+         * @param skillData Data for the skill item to create.
+         */
+        async createSkill(skillData: foundry.documents.ItemSource): Promise<GenesysItem<SkillDataModel> | undefined> {
+                if (skillData.type !== 'skill') {
+                        return undefined;
+                }
+
+                const existing = this.actor.items.find((i) => i.type === 'skill' && i.name === skillData.name);
+                if (existing) {
+                        ui.notifications.warn(game.i18n.localize('Genesys.Notifications.SkillAlreadyExists'));
+                        return undefined;
+                }
+
+                const [skill] = (await this.actor.createEmbeddedDocuments('Item', [skillData])) as GenesysItem<SkillDataModel>[];
+                return skill;
+        }
 }
