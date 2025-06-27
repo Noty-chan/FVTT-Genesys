@@ -21,21 +21,12 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build project
-        run: yarn build
-
-      - name: Remove node_modules
-        run: rm -rf node_modules
-
-      - name: Copy manifest
-        run: cp dist/system.json system.json
-
-      - name: Create system.zip
-        run: zip -r system.zip . -x '*.git*' -x '.github/*'
+      - name: Build and package
+        run: yarn release
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            system.json
-            system.zip
+            dist/system.json
+            genesys-*.zip
