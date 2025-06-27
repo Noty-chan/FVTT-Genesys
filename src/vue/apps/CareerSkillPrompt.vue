@@ -38,7 +38,7 @@ function confirm(event: Event) {
 			<button v-for="skill in context.skills" :key="skill.id" :class="`select-skill ${selectedSkillIDs.includes(skill.id) ? 'selected' : ''}`" @click="(ev) => selectSkill(ev, skill)">
 				<i v-if="selectedSkillIDs.includes(skill.id)" class="fas fa-check-circle" />
 				<img :src="skill.img" :alt="skill.name" />
-				<span>{{ skill.name }} (<Localized :label="`Genesys.CharacteristicAbbr.${skill.systemData.characteristic.capitalize()}`" />)</span>
+                                <span>{{ skill.name }}</span>
 			</button>
 		</div>
 

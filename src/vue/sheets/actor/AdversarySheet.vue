@@ -12,13 +12,11 @@ import TalentDataModel from '@/item/data/TalentDataModel';
 import AbilityDataModel from '@/item/data/AbilityDataModel';
 import EquipmentDataModel from '@/item/data/EquipmentDataModel';
 import ArmorDataModel from '@/item/data/ArmorDataModel';
-import SkillRanks from '@/vue/components/character/SkillRanks.vue';
 import DicePrompt, { RollType } from '@/app/DicePrompt';
 import ContextMenu from '@/vue/components/ContextMenu.vue';
 import MenuItem from '@/vue/components/MenuItem.vue';
 import Enriched from '@/vue/components/Enriched.vue';
 import WeaponDataModel from '@/item/data/WeaponDataModel';
-import { Characteristic as CharacteristicType } from '@/data/Characteristics';
 import InjuryDataModel from '@/item/data/InjuryDataModel';
 import { DragTransferData, constructDragTransferTypeFromData } from '@/data/DragTransferData';
 import CustomField from '@/vue/components/CustomField.vue';
@@ -67,25 +65,16 @@ async function rollSkill(skill: GenesysItem<SkillDataModel>) {
 	await DicePrompt.promptForRoll(toRaw(context.data.actor), skill.name);
 }
 
-async function rollUnskilled(characteristic: CharacteristicType) {
-	await DicePrompt.promptForRoll(toRaw(context.data.actor), '', { rollUnskilled: characteristic });
-}
 
 async function rollAttack(weapon: GenesysItem) {
-	if (weapon.type !== 'weapon') {
-		return;
-	}
+        if (weapon.type !== 'weapon') {
+                return;
+        }
 
-	const targetWeaponSkill = skillForWeapon(weapon);
-	let attackSkillName = targetWeaponSkill[0];
-	let rollUnskilled: CharacteristicType | undefined = undefined;
+        const targetWeaponSkill = skillForWeapon(weapon);
+        const attackSkillName = targetWeaponSkill[0];
 
-	if (targetWeaponSkill[1] === '-') {
-		rollUnskilled = CONFIG.genesys.skills.find((skill) => skill.name === attackSkillName)?.systemData.characteristic;
-		attackSkillName = '';
-	}
-
-	await DicePrompt.promptForRoll(toRaw(context.data.actor), attackSkillName, { rollType: RollType.Attack, rollData: { weapon }, rollUnskilled });
+        await DicePrompt.promptForRoll(toRaw(context.data.actor), attackSkillName, { rollType: RollType.Attack, rollData: { weapon } });
 }
 
 async function editItem(item: GenesysItem) {
@@ -151,18 +140,6 @@ function damageForWeapon(weapon: GenesysItem): number {
 	return weaponData.baseDamage + system.value.characteristics[weaponData.damageCharacteristic];
 }
 
-async function toggleSuper(characteristic: CharacteristicType) {
-	const superCharacteristics = new Set(system.value.superCharacteristics);
-	if (superCharacteristics.has(characteristic)) {
-		superCharacteristics.delete(characteristic);
-	} else {
-		superCharacteristics.add(characteristic);
-	}
-
-	await toRaw(context.data.actor).update({
-		'system.superCharacteristics': Array.from(superCharacteristics),
-	});
-}
 
 async function sendTalentToChat(talent: GenesysItem<TalentDataModel | AbilityDataModel>) {
 	const enrichedDescription = await TextEditor.enrichHTML(talent.systemData.description, { async: true });
@@ -281,76 +258,28 @@ onBeforeUpdate(updateEffects);
 						</div>
 					</div>
 
-					<div class="characteristics-container">
-						<div class="characteristics-row">
-							<Characteristic
-								label="Genesys.Characteristics.Brawn"
-								:value="system.characteristics.brawn"
-								name="system.characteristics.brawn"
-								can-edit
-								can-roll-unskilled
-								@rollUnskilled="rollUnskilled(CharacteristicType.Brawn)"
-								:is-super="system.superCharacteristics.has(CharacteristicType.Brawn)"
-								can-mark-super
-								@toggle-super="toggleSuper(CharacteristicType.Brawn)"
-							/>
-							<Characteristic
-								label="Genesys.Characteristics.Agility"
-								:value="system.characteristics.agility"
-								name="system.characteristics.agility"
-								can-edit
-								can-roll-unskilled
-								@rollUnskilled="rollUnskilled(CharacteristicType.Agility)"
-								:is-super="system.superCharacteristics.has(CharacteristicType.Agility)"
-								can-mark-super
-								@toggle-super="toggleSuper(CharacteristicType.Agility)"
-							/>
-							<Characteristic
-								label="Genesys.Characteristics.Intellect"
-								:value="system.characteristics.intellect"
-								name="system.characteristics.intellect"
-								can-edit
-								can-roll-unskilled
-								@rollUnskilled="rollUnskilled(CharacteristicType.Intellect)"
-								:is-super="system.superCharacteristics.has(CharacteristicType.Intellect)"
-								can-mark-super
-								@toggle-super="toggleSuper(CharacteristicType.Intellect)"
-							/>
-							<Characteristic
-								label="Genesys.Characteristics.Cunning"
-								:value="system.characteristics.cunning"
-								name="system.characteristics.cunning"
-								can-edit
-								can-roll-unskilled
-								@rollUnskilled="rollUnskilled(CharacteristicType.Cunning)"
-								:is-super="system.superCharacteristics.has(CharacteristicType.Cunning)"
-								can-mark-super
-								@toggle-super="toggleSuper(CharacteristicType.Cunning)"
-							/>
-							<Characteristic
-								label="Genesys.Characteristics.Willpower"
-								:value="system.characteristics.willpower"
-								name="system.characteristics.willpower"
-								can-edit
-								can-roll-unskilled
-								@rollUnskilled="rollUnskilled(CharacteristicType.Willpower)"
-								:is-super="system.superCharacteristics.has(CharacteristicType.Willpower)"
-								can-mark-super
-								@toggle-super="toggleSuper(CharacteristicType.Willpower)"
-							/>
-							<Characteristic
-								label="Genesys.Characteristics.Presence"
-								:value="system.characteristics.presence"
-								name="system.characteristics.presence"
-								can-edit
-								can-roll-unskilled
-								@rollUnskilled="rollUnskilled(CharacteristicType.Presence)"
-								:is-super="system.superCharacteristics.has(CharacteristicType.Presence)"
-								can-mark-super
-								@toggle-super="toggleSuper(CharacteristicType.Presence)"
-							/>
-						</div>
-					</div>
+                                        <div class="approaches-container">
+                                                <div class="approaches-row">
+                                                        <Characteristic
+                                                                label="Genesys.Approach.Push"
+                                                                :value="system.approaches.push"
+                                                                name="system.approaches.push"
+                                                                can-edit
+                                                        />
+                                                        <Characteristic
+                                                                label="Genesys.Approach.Maneuver"
+                                                                :value="system.approaches.maneuver"
+                                                                name="system.approaches.maneuver"
+                                                                can-edit
+                                                        />
+                                                        <Characteristic
+                                                                label="Genesys.Approach.Focus"
+                                                                :value="system.approaches.focus"
+                                                                name="system.approaches.focus"
+                                                                can-edit
+                                                        />
+                                                </div>
+                                        </div>
 
 					<div class="stats-row">
 						<slot name="stats">Stats Row Not Populated</slot>
@@ -384,10 +313,9 @@ onBeforeUpdate(updateEffects);
 										</MenuItem>
 									</template>
 
-									<a @click="rollSkill(skill)">
-										<span>{{ skill.name }} {{ skill.systemData.rank }}</span>
-										<SkillRanks :skill-value="skill.systemData.rank" :characteristic-value="system.characteristics[skill.systemData.characteristic]" />
-									</a>
+                                                                        <a @click="rollSkill(skill)">
+                                                                                <span>{{ skill.name }} {{ skill.systemData.rank }}</span>
+                                                                        </a>
 								</ContextMenu>
 							</div>
 						</slot>
@@ -721,22 +649,22 @@ onBeforeUpdate(updateEffects);
 		justify-content: space-around;
 	}
 
-	.characteristics-container {
-		display: grid;
-		grid-template-columns: 1fr auto 1fr;
+        .approaches-container {
+                display: grid;
+                grid-template-columns: 1fr auto 1fr;
 
-		.characteristics-row {
-			grid-column: 2 / span 1;
-		}
-	}
+                .approaches-row {
+                        grid-column: 2 / span 1;
+                }
+        }
 
-	.characteristics-row {
-		position: relative;
-		display: flex;
-		justify-content: center;
-		gap: 3em;
-		align-items: center;
-		padding-bottom: 0.25rem;
+        .approaches-row {
+                position: relative;
+                display: flex;
+                justify-content: center;
+                gap: 3em;
+                align-items: center;
+                padding-bottom: 0.25rem;
 
 		&::after {
 			display: block;
@@ -752,10 +680,10 @@ onBeforeUpdate(updateEffects);
 			clip-path: polygon(0% 50%, 100% 50%, 100% 100%, 0% 100%);
 		}
 
-		.characteristic-field {
-			z-index: 1;
-		}
-	}
+                .characteristic-field {
+                        z-index: 1;
+                }
+        }
 
 	.container {
 		padding-left: 1em;

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { inject, onMounted, ref, toRaw } from 'vue';
 import { DicePromptContext, type AttackRollData, RollType, type InitiativeRollData, CALCULATE_CHANCE_WORKER_NAME } from '@/app/DicePrompt';
-import { Characteristic } from '@/data/Characteristics';
+import { Approach } from '@/data/Approaches';
 import GenesysRoller from '@/dice/GenesysRoller';
 import GenesysItem from '@/item/GenesysItem';
 import SkillDataModel from '@/item/data/SkillDataModel';
@@ -65,7 +65,7 @@ const SORT_ORDER: Record<SimplePoolEntity, number> = {
 };
 
 const USE_UNCOUPLED_SKILLS = CONFIG.genesys.settings.uncoupleSkillsFromCharacteristics;
-const USE_SUPER_CHARACTERISTICS = CONFIG.genesys.settings.useSuperCharacteristics;
+const USE_SUPER_CHARACTERISTICS = false;
 const CHANCE_TO_SUCCEED_BY_SIMULATION_NUM_ROLLS = CONFIG.genesys.settings.showChanceToSucceedFromSimulations.amountOfRolls;
 const USE_CHANCE_TO_SUCCEED_BY_PERMUTATION = CONFIG.genesys.settings.showChanceToSucceedFromPermutations;
 const USE_CHANCE_TO_SUCCEED = USE_CHANCE_TO_SUCCEED_BY_PERMUTATION || CONFIG.genesys.settings.showChanceToSucceedFromSimulations.enabled;
@@ -84,10 +84,9 @@ const poolModifications = ref<DicePoolModifications>({
 });
 const availableSkills = ref<GenesysItem<SkillDataModel>[]>([]);
 const selectedSkill = ref<AlsoNone<GenesysItem<SkillDataModel>>>();
-const selectedCharacteristic = ref<AlsoNone<Characteristic>>();
+const selectedApproach = ref<AlsoNone<Approach>>();
 const probabilityOfSuccess = ref<AlsoNone<string>>();
 
-const useSuperCharacteristic = ref(false);
 const showPoolModifications = ref(!CONFIG.genesys.settings.startWithCollapsedPoolModifications);
 
 let previousDicePool: DicePool = {
@@ -108,7 +107,7 @@ onMounted(() => {
 			})
 		: [];
 	selectedSkill.value = context.skillName ? (availableSkills.value.find((skill) => skill.name === context.skillName) as AlsoNone<GenesysItem<SkillDataModel>>) : undefined;
-	selectedCharacteristic.value = selectedSkill.value?.systemData.characteristic ?? context.rollUnskilled;
+        selectedApproach.value = context.rollUnskilled;
 
 	calculatePoolModificationsForSkill();
 	buildDicePool();
@@ -197,11 +196,6 @@ function calculatePoolModificationsForSkill() {
 		const selfChangeKeys = [`${GenesysEffect.DICE_POOL_MOD_KEY_PREFIX}${GenesysEffect.DICE_POOL_MOD_CHECK_TYPE}${GenesysEffect.DICE_POOL_MOD_SELF_SOURCE}.`];
 		const targetChangeKeys = [`${GenesysEffect.DICE_POOL_MOD_KEY_PREFIX}${GenesysEffect.DICE_POOL_MOD_CHECK_TYPE}${GenesysEffect.DICE_POOL_MOD_TARGET_SOURCE}.`];
 
-		if (selectedCharacteristic.value) {
-			const charPoolModKey = `${GenesysEffect.DICE_POOL_MOD_KEY_PREFIX}${GenesysEffect.DICE_POOL_MOD_CHAR_TYPE}`;
-			selfChangeKeys.push(`${charPoolModKey}${GenesysEffect.DICE_POOL_MOD_SELF_SOURCE}.${selectedCharacteristic.value}`);
-			targetChangeKeys.push(`${charPoolModKey}${GenesysEffect.DICE_POOL_MOD_TARGET_SOURCE}.${selectedCharacteristic.value}`);
-		}
 		if (selectedSkill.value) {
 			const skillPoolModKey = `${GenesysEffect.DICE_POOL_MOD_KEY_PREFIX}${GenesysEffect.DICE_POOL_MOD_SKILL_TYPE}`;
 			selfChangeKeys.push(`${skillPoolModKey}${GenesysEffect.DICE_POOL_MOD_SELF_SOURCE}.${selectedSkill.value.name}`);
@@ -238,28 +232,26 @@ function calculatePoolModificationsForSkill() {
 }
 
 function buildDicePool() {
-	const actor = context.actor as AlsoNone<GenesysActor<NonVehicleActorDataModel>>;
-	let proficiencyDice;
-	let abilityDice;
-	let usesSuperCharacteristic = USE_SUPER_CHARACTERISTICS;
+        const actor = context.actor as AlsoNone<GenesysActor<NonVehicleActorDataModel>>;
+        let proficiencyDice;
+        let abilityDice;
+        let usesSuperCharacteristic = false;
 
 	// Step 1: Applying Skills and Characteristics
-	if (actor) {
-		const characteristicValue = selectedCharacteristic.value ? actor.systemData.characteristics[selectedCharacteristic.value] : 0;
-		let skillValue = selectedSkill.value?.systemData.rank ?? 0;
+        if (actor) {
+                const approachValue = selectedApproach.value ? actor.systemData.approaches[selectedApproach.value] : 0;
+                let skillValue = selectedSkill.value?.systemData.rank ?? 0;
 
 		if (actor.type === 'minion' && selectedSkill.value) {
 			skillValue = Math.clamp((actor.systemData as MinionDataModel).remainingMembers - 1, 0, 5);
 		}
 
-		proficiencyDice = Math.min(characteristicValue, skillValue);
-		abilityDice = Math.max(characteristicValue, skillValue) - proficiencyDice;
-		usesSuperCharacteristic &&= !!selectedCharacteristic.value && actor.systemData.superCharacteristics.has(selectedCharacteristic.value);
-	} else {
-		proficiencyDice = 0;
-		abilityDice = 0;
-		usesSuperCharacteristic &&= useSuperCharacteristic.value;
-	}
+                proficiencyDice = Math.min(approachValue, skillValue);
+                abilityDice = Math.max(approachValue, skillValue) - proficiencyDice;
+        } else {
+                proficiencyDice = 0;
+                abilityDice = 0;
+        }
 
 	const dicePool = {
 		dice: {
@@ -291,12 +283,13 @@ function buildDicePool() {
 
 function compileDiceFormula() {
 	const usesSuperCharacteristic = currentDicePool.value.usesSuperCharacteristic;
-	const formula = Object.entries(currentDicePool.value.dice)
-		.map(([dieKey, dieAmount]) => {
-			const dieName = dieKey as DieName;
-			const explodeDice = dieName === 'Proficiency' && usesSuperCharacteristic ? 'X' : '';
-			return `${dieAmount}${GenesysDice[dieName].FORMULA}${explodeDice}`;
-		})
+        const formula = Object.entries(currentDicePool.value.dice)
+                .filter(([dieKey]) => dieKey !== 'Proficiency' && dieKey !== 'Ability')
+                .map(([dieKey, dieAmount]) => {
+                        const dieName = dieKey as DieName;
+                        const explodeDice = dieName === 'Proficiency' && usesSuperCharacteristic ? 'X' : '';
+                        return `${dieAmount}${GenesysDice[dieName].FORMULA}${explodeDice}`;
+                })
 		.join('+');
 
 	return formula === '' ? '0' : formula;
@@ -393,18 +386,17 @@ async function approximateProbability() {
 
 function onSkillChange(event: Event) {
 	const selectedOption = event.currentTarget as HTMLSelectElement;
-	selectedSkill.value = availableSkills.value.find((s) => s.id === selectedOption.value) as AlsoNone<GenesysItem<SkillDataModel>>;
-	selectedCharacteristic.value = selectedSkill.value?.systemData.characteristic;
-
-	calculatePoolModificationsForSkill();
-	buildDicePool();
+        selectedSkill.value = availableSkills.value.find((s) => s.id === selectedOption.value) as AlsoNone<GenesysItem<SkillDataModel>>;
+        
+        calculatePoolModificationsForSkill();
+        buildDicePool();
 }
 
-function onCharacteristicChange(event: Event) {
-	const selectedOption = event.currentTarget as HTMLSelectElement;
-	selectedCharacteristic.value = selectedOption.value !== '-' ? (selectedOption.value as Characteristic) : undefined;
+function onApproachChange(event: Event) {
+        const selectedOption = event.currentTarget as HTMLSelectElement;
+        selectedApproach.value = selectedOption.value !== '-' ? (selectedOption.value as Approach) : undefined;
 
-	buildDicePool();
+        buildDicePool();
 }
 
 function getOrderedDice(category: DieCategory) {
@@ -446,9 +438,9 @@ async function rollPool() {
 	const formula = compileDiceFormula();
 	const symbols = compileSymbolsData();
 	const baseRollData = {
-		actor: toRaw(context.actor),
-		characteristic: selectedCharacteristic.value,
-		usesSuperCharacteristic: currentDicePool.value.usesSuperCharacteristic,
+                actor: toRaw(context.actor),
+                approach: selectedApproach.value,
+                usesSuperCharacteristic: currentDicePool.value.usesSuperCharacteristic,
 		skillId: selectedSkill.value?.id ?? '-',
 		formula,
 		symbols,
@@ -553,23 +545,19 @@ async function rollPool() {
 		</div>
 
 		<div v-if="context.actor" class="characteristic-skill-row">
-			<!-- Characteristic Selection -->
-			<select name="characteristic" :value="selectedCharacteristic ?? '-'" :disabled="selectedSkill && !USE_UNCOUPLED_SKILLS" @change="onCharacteristicChange">
-				<option value="-">—</option>
-				<option v-for="[charLabel, charValue] in Object.entries(Characteristic)" :key="charValue" :value="charValue"><Localized :label="`Genesys.Characteristics.${charLabel}`" /></option>
-			</select>
+                        <!-- Approach Selection -->
+                        <select name="approach" :value="selectedApproach ?? '-'" @change="onApproachChange">
+                                <option value="-">—</option>
+                                <option v-for="[appLabel, appValue] in Object.entries(Approach)" :key="appValue" :value="appValue"><Localized :label="`Genesys.Approach.${appLabel.capitalize()}`" /></option>
+                        </select>
 
 			<!-- Skill Selection -->
 			<select name="skill" :value="selectedSkill?.id ?? '-'" @change="onSkillChange">
 				<option value="-">—</option>
-				<option v-for="skill in availableSkills" :key="skill.id" :value="skill.id">{{ skill.name }} (<Localized :label="`Genesys.CharacteristicAbbr.${skill.systemData.characteristic.capitalize()}`" />)</option>
+                                <option v-for="skill in availableSkills" :key="skill.id" :value="skill.id">{{ skill.name }}</option>
 			</select>
 		</div>
 
-		<div v-else-if="USE_SUPER_CHARACTERISTICS" class="super-characteristic-row">
-			<input type="checkbox" v-model="useSuperCharacteristic" @change="buildDicePool()" />
-			<label><Localized label="Genesys.DicePrompt.UseSuperCharacteristic" /></label>
-		</div>
 
 		<div class="pool-modifications-title" @click="showPoolModifications = !showPoolModifications">
 			<i :class="`fas fa-caret-${showPoolModifications ? 'down' : 'right'}`"></i>
@@ -684,14 +672,6 @@ async function rollPool() {
 		grid-column: 2 / span 2;
 	}
 
-	.super-characteristic-row {
-		grid-row: 3 / span 1;
-		grid-column: 1 / span all;
-
-		& > * {
-			vertical-align: middle;
-		}
-	}
 
 	.pool-modifications-title {
 		grid-column: 1 / span all;

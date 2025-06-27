@@ -168,15 +168,15 @@ async function openActorSheet(actor: GenesysActor) {
 						<div class="member-skills-container">
 							<div v-for="[skillName, skill] in details.skills" :key="skillName" class="member-skill">
 								<img :src="skill.img" :alt="skill.name" />
-								<a class="skill-name" @click="rollSkillForActor(details.actor as GenesysActor<NonVehicleDataModel>, skill as GenesysItem<SkillDataModel>)">
-									<span>{{ skill.name }} (<Localized :label="`Genesys.CharacteristicAbbr.${skill.systemData.characteristic.capitalize()}`" />)</span>
-								</a>
+                                                                <a class="skill-name" @click="rollSkillForActor(details.actor as GenesysActor<NonVehicleDataModel>, skill as GenesysItem<SkillDataModel>)">
+                                                                        <span>{{ skill.name }}</span>
+                                                                </a>
 
 								<span class="skill-rank">{{ skill.systemData.rank }}</span>
-								<SkillRanks
-									:skill-value="details.actor.type === 'minion' ? Math.max(0, (details.actor.systemData as MinionDataModel).remainingMembers - 1) : skill.systemData.rank"
-									:characteristic-value="(details.actor.systemData as NonVehicleDataModel).characteristics[skill.systemData.characteristic]"
-								/>
+                                                                <SkillRanks
+                                                                        :skill-value="details.actor.type === 'minion' ? Math.max(0, (details.actor.systemData as MinionDataModel).remainingMembers - 1) : skill.systemData.rank"
+                                                                        :characteristic-value="0"
+                                                                />
 							</div>
 						</div>
 					</div>
