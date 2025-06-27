@@ -9,7 +9,7 @@ compatibility:
 authors:
   - name: Noty-chan
 scripts:
-  - public/scripts/container-query-polyfill/container-query-polyfill.modern.js
+  - scripts/container-query-polyfill/container-query-polyfill.modern.js
 esmodules:
   - Genesys.js
 styles:
