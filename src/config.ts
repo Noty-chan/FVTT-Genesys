@@ -24,7 +24,7 @@ import GenesysItem from '@/item/GenesysItem';
 /**
  * Default skills compendium to use if the setting is misconfigured.
  */
-export const DEFAULT_SKILLS_COMPENDIUM = 'genesys.crb-skills';
+export const DEFAULT_SKILLS_COMPENDIUM = 'genesys.hisuya-skills';
 
 /**
  * The default difficulty modifications to use if the setting is misconfigured.
