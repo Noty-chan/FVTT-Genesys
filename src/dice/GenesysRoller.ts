@@ -8,7 +8,7 @@
 
 import GenesysActor from '@/actor/GenesysActor';
 import GenesysDie from '@/dice/types/GenesysDie';
-import { Characteristic } from '@/data/Characteristics';
+import { Approach } from '@/data/Approaches';
 import GenesysItem from '@/item/GenesysItem';
 import WeaponDataModel from '@/item/data/WeaponDataModel';
 import VehicleWeaponDataModel from '@/item/data/VehicleWeaponDataModel';
@@ -78,48 +78,62 @@ export type GenesysRollResults = {
 export default class GenesysRoller {
 	static async skillRoll({
 		actor,
-		characteristic,
-		usesSuperCharacteristic,
-		skillId,
-		formula,
-		symbols,
-	}: {
-		actor?: GenesysActor;
-		characteristic?: Characteristic;
-		usesSuperCharacteristic: boolean;
-		skillId: string;
-		formula: string;
-		symbols: Record<string, number>;
-	}) {
-		const roll = new Roll(formula, { symbols });
-		await roll.evaluate();
-		const results = this.parseRollResults(roll);
+                approach,
+                usesSuperCharacteristic,
+                skillId,
+                formula,
+                symbols,
+        }: {
+                actor?: GenesysActor;
+                approach?: Approach;
+                usesSuperCharacteristic: boolean;
+                skillId: string;
+                formula: string;
+                symbols: Record<string, number>;
+        }) {
+                let proficiencyDice = 0;
+                let abilityDice = 0;
+
+                if (actor) {
+                        const approachValue = approach ? (actor.system as any).approaches[approach] as number : 0;
+                        const skillRank = skillId === '-' ? 0 : (actor.items.get(skillId)?.system as any).rank ?? 0;
+
+                        proficiencyDice = Math.min(approachValue, skillRank);
+                        abilityDice = Math.max(approachValue, skillRank) - proficiencyDice;
+                }
+
+                const abilityFormula = `${proficiencyDice}dP+${abilityDice}dA`;
+                const finalFormula = abilityFormula + (formula ? `+${formula}` : '');
+
+                const roll = new Roll(finalFormula, { symbols });
+                await roll.evaluate();
+                const results = this.parseRollResults(roll);
 
 		let description: string | undefined = undefined;
 
-		if (skillId === '-') {
-			if (characteristic) {
-				description = game.i18n.format('Genesys.Rolls.Description.Characteristic', {
-					characteristic: game.i18n.localize(`Genesys.Characteristics.${characteristic.capitalize()}`),
-				});
+                if (skillId === '-') {
+                        if (approach) {
+                                description = game.i18n.format('Genesys.Rolls.Description.Characteristic', {
+                                        characteristic: game.i18n.localize(`Genesys.Approach.${approach.capitalize()}`),
+                                });
 			} else if (!actor) {
 				description = game.i18n.format('Genesys.Rolls.Description.Simple', {
 					superChar: usesSuperCharacteristic ? 'super-char' : 'hide-it',
 				});
 			}
-		} else if (actor) {
-			if (characteristic) {
-				description = game.i18n.format('Genesys.Rolls.Description.Skill', {
-					skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
-					characteristic: game.i18n.localize(`Genesys.CharacteristicAbbr.${characteristic.capitalize()}`),
-					superChar: usesSuperCharacteristic ? 'super-char' : 'hide-it',
-				});
-			} else {
-				description = game.i18n.format('Genesys.Rolls.Description.SkillWithoutCharacteristic', {
-					skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
-				});
-			}
-		}
+                } else if (actor) {
+                        if (approach) {
+                                description = game.i18n.format('Genesys.Rolls.Description.Skill', {
+                                        skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
+                                        characteristic: game.i18n.localize(`Genesys.Approach.${approach.capitalize()}`),
+                                        superChar: usesSuperCharacteristic ? 'super-char' : 'hide-it',
+                                });
+                        } else {
+                                description = game.i18n.format('Genesys.Rolls.Description.SkillWithoutCharacteristic', {
+                                        skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
+                                });
+                        }
+                }
 
 		const rollData = {
 			description: description,
@@ -138,23 +152,37 @@ export default class GenesysRoller {
 
 	static async attackRoll({
 		actor,
-		characteristic,
-		usesSuperCharacteristic,
-		skillId,
-		formula,
-		symbols,
-		weapon,
-	}: {
-		actor?: GenesysActor;
-		characteristic?: Characteristic;
-		usesSuperCharacteristic: boolean;
+                approach,
+                usesSuperCharacteristic,
+                skillId,
+                formula,
+                symbols,
+                weapon,
+        }: {
+                actor?: GenesysActor;
+                approach?: Approach;
+                usesSuperCharacteristic: boolean;
 		skillId: string;
 		formula: string;
 		symbols: Record<string, number>;
 		weapon: GenesysItem<WeaponDataModel | VehicleWeaponDataModel>;
-	}) {
-		const roll = new Roll(formula, { symbols });
-		await roll.evaluate();
+        }) {
+                let proficiencyDice = 0;
+                let abilityDice = 0;
+
+                if (actor) {
+                        const approachValue = approach ? (actor.system as any).approaches[approach] as number : 0;
+                        const skillRank = skillId === '-' ? 0 : (actor.items.get(skillId)?.system as any).rank ?? 0;
+
+                        proficiencyDice = Math.min(approachValue, skillRank);
+                        abilityDice = Math.max(approachValue, skillRank) - proficiencyDice;
+                }
+
+                const abilityFormula = `${proficiencyDice}dP+${abilityDice}dA`;
+                const finalFormula = abilityFormula + (formula ? `+${formula}` : '');
+
+                const roll = new Roll(finalFormula, { symbols });
+                await roll.evaluate();
 		const results = this.parseRollResults(roll);
 
 		let description: string | undefined = undefined;
@@ -172,22 +200,22 @@ export default class GenesysRoller {
 			totalDamage += results.netSuccess;
 		}
 
-		if (skillId === '-') {
-			if (characteristic) {
-				description = game.i18n.format('Genesys.Rolls.Description.AttackCharacteristic', {
-					name: weapon.name,
-					characteristic: game.i18n.localize(`Genesys.Characteristics.${characteristic.capitalize()}`),
-				});
-			}
-		} else if (actor) {
-			if (characteristic) {
-				description = game.i18n.format('Genesys.Rolls.Description.AttackSkill', {
-					name: weapon.name,
-					skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
-					characteristic: game.i18n.localize(`Genesys.CharacteristicAbbr.${characteristic.capitalize()}`),
-					superChar: usesSuperCharacteristic ? 'super-char' : 'hide-it',
-				});
-			} else {
+                if (skillId === '-') {
+                        if (approach) {
+                                description = game.i18n.format('Genesys.Rolls.Description.AttackCharacteristic', {
+                                        name: weapon.name,
+                                        characteristic: game.i18n.localize(`Genesys.Approach.${approach.capitalize()}`),
+                                });
+                        }
+                } else if (actor) {
+                        if (approach) {
+                                description = game.i18n.format('Genesys.Rolls.Description.AttackSkill', {
+                                        name: weapon.name,
+                                        skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
+                                        characteristic: game.i18n.localize(`Genesys.Approach.${approach.capitalize()}`),
+                                        superChar: usesSuperCharacteristic ? 'super-char' : 'hide-it',
+                                });
+                        } else {
 				description = game.i18n.format('Genesys.Rolls.Description.AttackSkillWithoutCharacteristic', {
 					name: weapon.name,
 					skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',

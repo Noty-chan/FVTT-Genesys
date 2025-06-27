@@ -12,7 +12,7 @@ import { ContextBase } from '@/vue/SheetContext';
 import VueDicePrompt from '@/vue/apps/DicePrompt.vue';
 import WeaponDataModel from '@/item/data/WeaponDataModel';
 import VueSheet from '@/vue/VueSheet';
-import { Characteristic } from '@/data/Characteristics';
+import { Approach } from '@/data/Approaches';
 
 export enum RollType {
 	Simple,
@@ -22,13 +22,13 @@ export enum RollType {
 }
 
 export interface DicePromptContext extends ContextBase {
-	actor?: GenesysActor;
-	skillName?: string;
-	rollType: RollType;
-	difficulty: string;
-	rollUnskilled?: Characteristic;
-	rollData: any;
-	app: DicePrompt;
+        actor?: GenesysActor;
+        skillName?: string;
+        rollType: RollType;
+        difficulty: string;
+        rollUnskilled?: Approach;
+        rollData: any;
+        app: DicePrompt;
 }
 
 export type AttackRollData = {
@@ -41,10 +41,10 @@ export type InitiativeRollData = {
 };
 
 type DicePromptOptions = {
-	rollType?: RollType;
-	difficulty?: string;
-	rollUnskilled?: Characteristic;
-	rollData?: { [key: string]: any };
+        rollType?: RollType;
+        difficulty?: string;
+        rollUnskilled?: Approach;
+        rollData?: { [key: string]: any };
 };
 
 /**
@@ -85,17 +85,17 @@ export default class DicePrompt extends VueSheet(Application) {
 	skillName?: string;
 	rollType: RollType;
 	difficulty: string;
-	rollUnskilled?: Characteristic;
+        rollUnskilled?: Approach;
 	rollData?: { [key: string]: any };
 
-	constructor(actor?: GenesysActor, skillName?: string, { rollType, difficulty, rollUnskilled, rollData }: DicePromptOptions = {}) {
+        constructor(actor?: GenesysActor, skillName?: string, { rollType, difficulty, rollUnskilled, rollData }: DicePromptOptions = {}) {
 		super();
 
 		this.actor = actor;
 		this.skillName = skillName;
 		this.rollType = rollType ?? RollType.Skill;
 		this.difficulty = difficulty ?? CONFIG.genesys.settings.defaultDifficulty;
-		this.rollUnskilled = rollUnskilled;
+                this.rollUnskilled = rollUnskilled;
 		this.rollData = rollData;
 	}
 
