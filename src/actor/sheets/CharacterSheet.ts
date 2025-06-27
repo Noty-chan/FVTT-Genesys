@@ -431,7 +431,7 @@ export default class CharacterSheet extends VueSheet(GenesysActorSheet<Character
          *
          * @param skillData Data for the skill item to create.
          */
-        async createSkill(skillData: foundry.documents.ItemSource): Promise<GenesysItem<SkillDataModel> | undefined> {
+        async createSkill(skillData: foundry.data.ItemSource): Promise<GenesysItem<SkillDataModel> | undefined> {
                 if (skillData.type !== 'skill') {
                         return undefined;
                 }
