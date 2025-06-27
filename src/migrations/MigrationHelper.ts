@@ -2,13 +2,14 @@ import { NAMESPACE } from '@/settings';
 import { KEY_MIGRATION_VERSION } from '@/settings/alpha';
 import { migrate_UseUuidForVehicles } from '@/migrations/1-use-uuid-for-vehicle';
 import { migrate_ActorOnlyOnceInCrew } from '@/migrations/2-actors-once-in-vehicle';
+import { migrate_AddHisuyaFields } from '@/migrations/3-add-hisuya-fields';
 
 export const enum MigrationStatus {
 	SUCCESS,
 	FAILURE,
 }
 
-const migrationScripts: Array<(migrationId: number) => Promise<MigrationStatus>> = [migrate_UseUuidForVehicles, migrate_ActorOnlyOnceInCrew];
+const migrationScripts: Array<(migrationId: number) => Promise<MigrationStatus>> = [migrate_UseUuidForVehicles, migrate_ActorOnlyOnceInCrew, migrate_AddHisuyaFields];
 
 export async function performMigrations(lastAlpha: string) {
 	const totalMigrationScripts = migrationScripts.length;
