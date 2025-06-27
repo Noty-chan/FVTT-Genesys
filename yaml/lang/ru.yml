@@ -7,26 +7,517 @@ TYPES:
     vehicle: Транспорт
 
   Item:
+    # Character Creation Items
+    ability: Особая способность
+    archetype: Архетип
+    career: Карьера
+    injury: Критическая травма
+    skill: Навык
+    talent: Талант
 
+    # Equipment Items
+    armor: Броня
+    consumable: Расходник
+    container: Контейнер
+    gear: Снаряжение
+    quality: Свойство предмета
+    weapon: Оружие
+    vehicleWeapon: Оружие транспорта
+
+# Дополнительные ярлыки
 labels:
   approach:
     push: Нажим
     maneuver: Маневр
     focus: Фокус
 
+# Genesys
 Genesys:
+  # System Strings
+  System:
+    Name: Genesys
+
+  # System Settings
+  Settings:
+    SkillsCompendium: Skills Compendium
+    SkillsCompendiumHint: An Item compendium containing all of the skills that should be applied to new characters. Changing this value will have no impact on existing characters.
+    DefaultDifficulty: Default Difficulty
+    DefaultDifficultyHint: >-
+      The default dice pool modifications that should be added to the dice pool when doing a check. This default might be ignored in cases were the difficulty is known.
+      For an explanation of all the possible modifications and their glyph please check [[Dice-Pool-Modification-Glyphs|Dice Pool Modification Glyphs]].
+    Money: Currency Label
+    MoneyHint: The name (such as Gold, Credits, Cash, Doubloons, etc) used for Currency in the system.
+    CareerSkillRanks: Career Skill Ranks
+    CareerSkillRanksHint: Number of skills you can select from your Career Skills list during character creation.
+    UncoupleSkillsAlternateRule: Uncouple Skills from Characteristics
+    UncoupleSkillsAlternateRuleHint: Allows selecting an alternative Characteristic for a skill in the dice prompt window, per the Uncoupling Skills from Characteristics alternate rule (Core Rulebook, p.205).
+    ShowDamageOnFailure: Show Attack Damage On Failure
+    ShowDamageOnFailureHint: Whether to show Damage, Critical, and Qualities on attack roll chat cards even when the roll was a failure.
+    SkillForInjuries: Resilience Skill Name
+    SkillForInjuriesHint: Name of the skill used when recovering from Critical Injuries.
+    SkillForRepairingVehicleHits: Mechanics Skill Name
+    SkillForRepairingVehicleHitsHint: Name of the skill used when recovering from Critical Hits.
+    UseMagicalGirlSymbols: Use Magical Girl Symbols by MilkMyth (Client-Only)
+    UseMagicalGirlSymbolsHint: Swap the Genesys symbol set for MilkMyth's Magical Girls symbol set. This will not affect other users.
+    DicePoolCollapseModifications: Collapse the Pool Modifications Section
+    DicePoolCollapseModificationsHint: If enabled the 'Pool Modifications' section on the dice pool prompt will be collapsed during the initial render.
+    DicePoolAutoApplyModifications: Auto-Apply Pool Modifications
+    DicePoolAutoApplyModificationsHint: If enabled all the modifications that can affect the dice pool will be applied when opening the dice pool prompt.
+    DicePoolChanceToSucceedByPermutation: Calculate the Chance to Succeed for Dice Pools
+    DicePoolChanceToSucceedByPermutationHint: >-
+      If enabled this will spawn a Web Worker that calculates the exact chance to succeed.
+      However, if the dice pool uses a super-characteristic the calculated value is lower than the true value because it assumes that the pool doesn't explode.
+      For dice pools that use super-characteristics you can get a more accurate value by using simulations.
+    DicePoolChanceToSucceedBySimulation: Approximate the Chance to Succeed for Dice Pools
+    DicePoolChanceToSucceedBySimulationHint: >-
+      The number of simulated rolls to run in order to approximate the chance to succeed.
+      Be mindful when increasing this number since it will have a direct impact on Foundry's performance; a good number to start is 100. If a value of 0 is provided this feature is disabled.
+      This setting is ignored if the chance is already being calculated some other way.
+    SuperCharacteristics: Super-Characteristics
+    SuperCharacteristicsHint: Allows marking characteristics as being 'super' during character creation, per the Super-Characteristics optional rule (Core Rulebook, p.251).
+
+  # Tooltips
+  Tooltips:
+    NoDescription: No Description Available
+    IsInitiative: Whether the skill is commonly used for Initiative or not. Setting this to true will make it appear as an option in the combat tracker for mass rolls.
+    CycleInitiativeSkill: Cycle which initiative skill the combatant is using.
+    AddExtraInitiativeSlot: Adds an extra initiative slot.
+
+  # Dice Rolls
+  Rolls:
+    Dice: Dice
+    Results: Roll Results
+    Description:
+      Simple: 'Rolling<i class="fas fa-star {superChar}"></i>...'
+      Initiative: 'Rolling Initiative with <strong>{skill}<i class="fas fa-star {superChar}"></i></strong>...'
+      Characteristic: Rolling <strong>{characteristic}</strong>...
+      Skill: 'Rolling <strong>{skill} ({characteristic}<i class="fas fa-star {superChar}"></i>)</strong>...'
+      SkillWithoutCharacteristic: Rolling <strong>{skill}</strong>...
+      AttackCharacteristic: Attacking with <strong>{name}</strong> using <strong>{characteristic}</strong>!
+      AttackSkill: 'Attacking with <strong>{name}</strong> using <strong>{skill} ({characteristic}<i class="fas fa-star {superChar}"></i>)</strong>!'
+      AttackSkillWithoutCharacteristic: Attacking with <strong>{name}</strong> using <strong>{skill}</strong>!
+    Attack:
+      Critical: Critical
+      Label: Attack Results
+      Damage: Damage
+      Qualities: Attack Qualities
+    Summary:
+      Label: Summary
+      Successes: Successes
+      Failures: Failures
+      Advantage: Advantage
+      Threat: Threat
+      Triumph: Triumph
+      Despair: Despair
+
+  # Career Skill Prompt
+  CareerSkillPrompt:
+    Title: Career Skills
+    Hint: 'Select Career Skills to gain a rank:'
+    RemainingChoices: Remaining Choices
+    Confirm: Done
+
+  # Dice So Nice strings
+  DiceCat:
+    Normal: Genesys Dice
+    MagicalGirl: Magical Girl by MilkMyth
+    Custom: Genesys Dice (Customizable)
+  DiceColors:
+    Boost: Boost Die
+    Ability: Ability Die
+    Proficiency: Proficiency Die
+    Setback: Setback Die
+    Difficulty: Difficulty Die
+    Challenge: Challenge Die
+
+  # Difficulty Ranks
+  Difficulty:
+    Simple: Simple
+    Easy: Easy
+    Average: Average
+    Hard: Hard
+    Daunting: Daunting
+    Formidable: Formidable
+    Impossible: Impossible
+
+  Inventory:
+    Sections:
+      Armor: Armor
+      Consumable: Consumables
+      Container: Containers
+      Gear: Gear
+      Weapon: Weapons
+
+  # ActiveEffects System Strings
+  ActiveEffects:
+    Passive: Passive Effects
+    Temporary: Temporary Effects
+    Suppressed: Inactive Effects
+    Source: Source
+    Duration: Duration
+    ChangeKey: Effect Target
+    ChangeMode: Option
+    ChangeValue: Effect Value
+    Types:
+      ModifyCharacteristic: Modify Characteristic
+      ModifyStat: Modify Stat
+      ModifySkill: Modify Skill
+      ModifyDicePool:
+        GroupLabel: Modify Dice Pool
+        Options:
+          Check: Any Check
+          Characteristic: Uses Characteristic
+          Skill: Uses Skill
+
+  # Dice Prompt Labels
+  DicePrompt:
+    Title: Dice Pool
+    Roll: Roll!
+    Hint: Use the dice box on the right to add, upgrade, and downgrade. Click dice in the pool to remove them!
+    UseSuperCharacteristic: Roll as a super-characteristic
+    PoolModifications:
+      Title: Pool Modifications
+      DefaultDifficulty: Default Difficulty
+      ManualChanges: Manual Changes
+      SelfEffects: 'From Self: '
+      TargetEffects: 'From Target: '
+    ChanceToSucceed: 'Chance to Succeed:'
+    ChanceToSucceedByPermutationDisclaimer: The displayed probability is exact unless the dice pool includes a super-characteristic.
+    ChanceToSucceedBySimulationDisclaimer: The displayed probability is an approximation that uses the Monte Carlo method.
+
+  # Rewards Prompt Labels
+  RewardsPrompt:
+    Title: Rewards
+    Amount: Amount
+    Reason: Reason
+
+  # Character Skill Prompt Labels
+  CharacterSkillPrompt:
+    Title: Select User
+
+  # Clone Actor Prompt Labels
+  CloneActorPrompt:
+    Title: Drop Confirmation
+    OriginalMethod:
+      Label: Reference
+      Description: A reference to the actor will be saved.
+    CloneMethod:
+      Label: Clone
+      Description: >-
+        A clone of the dropped actor will be created and a reference to it will be saved.
+        Additionally, the cloned actor will appear on the 'Actors' directory as a new entry with the name specified below.
+      ActorNameLabel: New Name
+
+  # Experience Journal Labels
+  XPJournal:
+    Award: '<strong>XP Awarded by GM</strong>: {reason}'
+    Starting: <strong>Starting XP from Archetype</strong>
+    Characteristic: Increased <strong>{characteristic}</strong> to {rank}.
+    Skill: Increased <strong>{name}</strong> to {rank}.
+    NewTalent: 'Purchased Talent: <strong>{name}</strong> (Tier {tier}).'
+    TalentRank: Increased <strong>{name}</strong> to Rank {rank} (Effective Tier {tier}).
+
+  # Notification Prompts
+  Notifications:
+    GenericError: Unable to perform the desired action.
+    AlreadyHaveSpecialAbility: Unable to add {abilityName}; Special Abilities are not ranked, and you already have it!
+    TalentNotRanked: Unable to add {talentName}; It is not a ranked talent, and you already have it!
+    NoSkillsCompendium: Skills compendium setting is empty! Attempting to use default skills compendium.
+    MissingCompendium: Unable to load Skills Compendium '{name}'. Reconfigure the skills compendium in Genesys Settings.
+    WrongCompendiumType: Configured Skills Compendium '{name}' is a {type} Compendium, not an Item Compendium! Reconfigure the skills compendium in Genesys Settings.
+    NoSkillsInCompendium: Configured Skills Compendium '{name}' does not contain any skills. Reconfigure the skills compendium in Genesys Settings.
+    CharacterWithNoSkills: Character was created with no initial skill data since none were found on the configured Skills Compendium.
+    CannotDeleteCharacteristic: Cannot delete XP Journal Entry for characteristic '{characteristic}' - you must delete the advance to the next rank first!
+    CannotDeleteSkill: Cannot delete XP Journal Entry for skill '{name}' - you must delete the advance to the next rank first!
+    CannotAffordTalent: Cannot afford talent '{name}' ({cost}xp).
+    CannotAffordRankedTalent: Cannot afford to increase talent '{name}' to rank {newRank} ({cost}xp).
+    CannotDeleteNewTalent: Cannot delete XP Journal Entry for new talent '{name}' - you must delete the talent's rank increases first!
+    CannotDeleteExistingTalent: Cannot delete XP Journal Entry for increasing talent '{name}' to rank {rank} - you must delete the higher rank increases first!
+    CannotDeleteInvalidTalentPyramid: Cannot delete XP Journal Entry for talent of rank {rank} to preserve the talent pyramid structure. Try deleting talents of higher rank first.
+    CannotPurchaseTalentTier: Cannot purchase talents at tier {tier} - you must have at least {minimum} talents at rank {lowerTier} first.
+    NotEnoughStoryPoints: You can't spend Story Points you don't have!
+    NotEnoughResource: Недостаточно ресурса!
+    SelectOneTokenForAction: You need to selected a single token to perform this action.
+    SelectNoneOrOneTokenForAction: You need to select no tokens, or a single token, to perform this action.
+    TokenIsNotCombatant: The selected token is not participating on the current combat.
+    CannotClaimOppositeSlot: You can't claim this initiative slot with {name} - it's on the wrong side!
+    CannotSelectActor: You do not have sufficient permission to select this Actor.
+    InvalidTokenTypeForAction: The selected token is of an invalid type to perform this action.
+    EffectsWereNotUpdatedAfterTransfer: There was an error updating the effects with the latest values for the transfered '{name}'.
+    NoRoleMembersWithAppropriateSkills: There are no role members that have the appropriate skills to perform this action.
+
+  # Dialogs Prompts
+  Dialogs:
+    ConfirmDeleteItem:
+      Title: Confirm Removal
+      Content: This will remove the item. Do you want to proceed?
+
+  # Migration Related Messages
+  Migration:
+    MustPerformMigration: >-
+      MIGRATION NEEDED!: Some data needs to be migrated and failure to do so might corrupt the data or break functionality.
+      Please exit out of the world and wait for a GM to perform the migration.
+    StartingMigration: 'MIGRATION STARTED: Commencing {amount} migration(s); please be patient and do not close the application.'
+    StartingScriptMigration: 'MIGRATION STARTED [{id}]: Commencing migration.'
+    StoppedScriptMigration: 'MIGRATION STOPPED [{id}]: Encountered an error while migrating.'
+    CompletedScriptMigration: 'MIGRATION FINISHED [{id}]: Migration completed.'
+    MultipleSuccessfulMigration: 'MIGRATION VERSION UPDATED: At least one migration was completed successfully.'
+    StoppedMigration: >-
+      MIGRATION STOPPED: The migration has stopped due to some errors; consult the console log for what these errors are.
+      There are still {amount} migration(s) that haven't been performed.
+    CompletedMigration: 'MIGRATION FINISHED: All migrations done; thanks for your patience.'
+
+  # Story Points
+  StoryPoints:
+    Player: Player Story Points
+    GM: GM Story Points
+    Reset: Reset Story Points
+    Spend: Spend Point
+    ChatMessageGmPool: Spending a GM Story Point!
+    ChatMessagePlayerPool: Spending a Player Story Point!
+
+  # Localized strings used in TextEditor enrichers.
+  Enrichers:
+    Difficulty: '{difficulty} [{symbols}] {skill} check'  # e.g. Average [♦♦] Coercion Check
+    Opposed: 'Opposed {skill1} versus {skill2} check'
+
+  # Combat Tracker
+  CombatTracker:
+    RevokeInitiativeClaim: Revoke Initiative Claim
+
+  # Sheet Tab names
+  Tabs:
+    Skills: Skills
+    Combat: Combat
+    Talents: Talents
+    Magic: Magic
+    Inventory: Inventory
+    Effects: Effects
+    Journal: Journal
+    Description: Description
+    Data: Data
+    Details: Details
+    Duration: Duration
+    Miscellaneous: Miscellaneous
+    Crew: Crew
+    Attachments: Attachments
+
+  # Characteristics
+  Characteristics:
+    Brawn: Brawn
+    Agility: Agility
+    Intellect: Intellect
+    Cunning: Cunning
+    Willpower: Willpower
+    Presence: Presence
+
+  # Characteristic Abbreviations
+  CharacteristicAbbr:
+    Brawn: Br
+    Agility: Ag
+    Intellect: Int
+    Cunning: Cun
+    Willpower: Will
+    Presence: Pr
+
+  # Approach Labels
   Approach:
     Push: Нажим
     Maneuver: Маневр
     Focus: Фокус
+
+  # Skill Categories
+  SkillCategory:
+    General: General
+    Magic: Magic
+    Combat: Combat
+    Social: Social
+    Knowledge: Knowledge
+
+  # Archetype Data
   Archetype:
     Abilities: Способности архетипа
+    StartingWounds: Starting Wound Threshold
+    StartingStrain: Starting Strain Threshold
+    StartingXP: Starting Experience
+    GrantedItems: Granted Items
+
+  # Adversary Labels
   Adversary:
+    MinionSkills: Навыки (только группа)
+    Skills: Навыки
+    Talents: Таланты
     Abilities: Способности
+    Equipment: Снаряжение
     None: Нет
+    Base: База
+    Remaining: осталось
+
+  # Career Data
+  Career:
+    Skills: Career Skills
+
+  # Range Values
+  Range:
+    Engaged: Engaged
+    Short: Short
+    Medium: Medium
+    Long: Long
+    Extreme: Extreme
+    Strategic: Strategic
+
+  # Firing Arc
+  FiringArc:
+    Fore: Fore
+    Aft: Aft
+    Port: Port
+    Starboard: Starboard
+    All: All
+    None: None
+
+  # Dialog Groups
+  DialogGroups:
+    Item:
+      CharacterCreation: Character Creation
+      Equipment: Equipment
+      Other: Other
+    Actor:
+      Adversary: Adversary
+      Other: Other
+
+  # Equipment Data
+  Equipment:
+    DamageState:
+      Undamaged: Undamaged
+      Minor: Minor Damage
+      Moderate: Moderate Damage
+      Major: Major Damage
+
+  # Misc. Unsorted Labels (to be cleaned up later)
   Labels:
+    Name: Имя
+    CharacterName: Имя персонажа
+    SpeciesArchetype: Вид/архетип
+    Career: Карьера
+    Soak: Защита
+    SoakValue: Значение защиты
+    Wounds: Раны
+    WoundThreshold: Предел ран
+    Strain: Стресс
+    StrainThreshold: Предел стресса
+    Defense: Защита
+    Threshold: Предел
+    Current: Текущее
+    DefenseMelee: Ближний бой
+    MeleeDefense: Защита в ближнем бою
+    DefenseRanged: Дальний бой
+    RangedDefense: Защита в дальнем бою
+    TotalXP: Всего опыта
+    AvailableXP: Доступный опыт
+    Characteristic: Характеристика
+    IsMagicSkill: Магический навык
+    Source: Источник
+    GeneralSkills: Общие навыки
+    MagicSkills: Магические навыки
+    CombatSkills: Боевые навыки
+    SocialSkills: Социальные навыки
+    KnowledgeSkills: Знания
+    Category: Категория
+    Skills: Навыки
+    Delete: Удалить
+    Edit: Изменить
+    NoCareer: Карьера не выбрана - перетащите сюда!
+    NoArchetype: Архетип не выбран - перетащите сюда!
+    MarkCareerSkill: Отметить как карьерный навык
+    UnmarkCareerSkill: Снять отметку карьерного навыка
+    MarkSuperCharacteristic: Пометить как сверххарактеристику
+    UnmarkSuperCharacteristic: Снять пометку сверххарактеристики
+    Motivations: Мотивации
+    Strength: Сильная сторона
+    Flaw: Недостаток
+    Desire: Желание
+    Fear: Страх
+    CharacterIllustration: Иллюстрация персонажа
+    CharacterDescription: Описание персонажа
+    Pronouns: Местоимения
+    Age: Возраст
+    Height: Рост
+    Build: Телосложение
+    Hair: Волосы
+    Eyes: Глаза
+    NotableFeatures: Особенности
+    Notes: Заметки
+    XPJournal: Журнал опыта
+    Tier: Уровень
+    Activation: Активация
+    Rank: Ранг
+    Ranked: С ранжированием
+    Active: Активный
+    Passive: Пассивный
+    Yes: Да
+    No: Нет
+    Talents: Таланты
     SpecialAbilities: Нарративные способности
+    TierCount: Уровень {tier}
+    DeletedItemData: 'ERR: удалённый предмет {name}'
+    Add: Добавить
+    Encumbrance: Переносимость
+    Price: Цена
+    Rarity: Редкость
+    Damage: Урон
+    DamageCharacteristic: Урон от характеристики
+    Critical: Крит
+    Range: Дальность
+    Quantity: Количество
+    EncumbranceThreshold: Предел переносимости
+    Encumbered: Перегруз!
+    RankUp: Повысить ранг
+    RankDown: Понизить ранг
+    FreeRankUp: Повысить ранг (Free)
+    FreeRankDown: Понизить ранг (Free)
+    IsRated: Имеет рейтинг?
+    Qualities: Свойства
+    Severity: Тяжесть
+    Attacks: Атаки
+    Armor: Броня
+    CriticalInjuries: Критические травмы
+    CriticalHits: Критические попадания
+    Injury: Травма
+    Hit: Попадание
+    Skill: Навык
+    Crit: Крит
+    Special: Особое
+    GroupSize: Размер группы
+    SkillNotFound: Навык не найден
+    IsInitiative: Навык инициативы?
+    Equipped: Надето
+    Carried: Несется
+    Dropped: Брошено
+    NotApplicable: н/д
+    EffectiveTier: Фактический уровень
+    Silhouette: Силуэт
+    Speed: Скорость
+    Handling: Управление
+    HullTrauma: Повреждения корпуса
+    HullTraumaThreshold: Предел повреждений корпуса
+    SystemStrain: Системный износ
+    SystemStrainThreshold: Предел износа системы
+    Illustration: Иллюстрация
+    Complement: Команда
+    Consumables: Запасы
+    PassengerCapacity: Вместимость пассажиров
+    EncumbranceCapacity: Грузоподъемность
+    Information: Информация
+    Passengers: Пассажиры
+    Role: Роль
+    Roles: Роли
+    OverCapacity: Перегруз!
+    RoleSkills: Навыки роли
+    FiringArc: Сектор обстрела
+    Select: Выбрать
+    PerformCheck: Сделать проверку
     Resource: Ресурс
     UseAbility: Использовать
   Notifications:
     NotEnoughResource: Недостаточно ресурса!
+
