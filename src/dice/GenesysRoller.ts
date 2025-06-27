@@ -9,6 +9,7 @@
 import GenesysActor from '@/actor/GenesysActor';
 import GenesysDie from '@/dice/types/GenesysDie';
 import { Characteristic } from '@/data/Characteristics';
+import { Approach } from '@/data/Approaches';
 import GenesysItem from '@/item/GenesysItem';
 import WeaponDataModel from '@/item/data/WeaponDataModel';
 import VehicleWeaponDataModel from '@/item/data/VehicleWeaponDataModel';
@@ -77,15 +78,17 @@ export type GenesysRollResults = {
 
 export default class GenesysRoller {
 	static async skillRoll({
-		actor,
-		characteristic,
-		usesSuperCharacteristic,
+               actor,
+               approach,
+               characteristic,
+               usesSuperCharacteristic,
 		skillId,
 		formula,
 		symbols,
 	}: {
-		actor?: GenesysActor;
-		characteristic?: Characteristic;
+               actor?: GenesysActor;
+               approach?: Approach;
+               characteristic?: Characteristic;
 		usesSuperCharacteristic: boolean;
 		skillId: string;
 		formula: string;
@@ -95,31 +98,40 @@ export default class GenesysRoller {
 		await roll.evaluate();
 		const results = this.parseRollResults(roll);
 
-		let description: string | undefined = undefined;
+                let description: string | undefined = undefined;
 
-		if (skillId === '-') {
-			if (characteristic) {
-				description = game.i18n.format('Genesys.Rolls.Description.Characteristic', {
-					characteristic: game.i18n.localize(`Genesys.Characteristics.${characteristic.capitalize()}`),
-				});
-			} else if (!actor) {
-				description = game.i18n.format('Genesys.Rolls.Description.Simple', {
-					superChar: usesSuperCharacteristic ? 'super-char' : 'hide-it',
-				});
-			}
-		} else if (actor) {
-			if (characteristic) {
-				description = game.i18n.format('Genesys.Rolls.Description.Skill', {
-					skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
-					characteristic: game.i18n.localize(`Genesys.CharacteristicAbbr.${characteristic.capitalize()}`),
-					superChar: usesSuperCharacteristic ? 'super-char' : 'hide-it',
-				});
-			} else {
-				description = game.i18n.format('Genesys.Rolls.Description.SkillWithoutCharacteristic', {
-					skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
-				});
-			}
-		}
+                if (skillId === '-') {
+                        if (approach) {
+                                description = game.i18n.format('Genesys.Rolls.Description.Approach', {
+                                        approach: game.i18n.localize(`Genesys.Approach.${approach.capitalize()}`),
+                                });
+                        } else if (characteristic) {
+                                description = game.i18n.format('Genesys.Rolls.Description.Characteristic', {
+                                        characteristic: game.i18n.localize(`Genesys.Characteristics.${characteristic.capitalize()}`),
+                                });
+                        } else if (!actor) {
+                                description = game.i18n.format('Genesys.Rolls.Description.Simple', {
+                                        superChar: usesSuperCharacteristic ? 'super-char' : 'hide-it',
+                                });
+                        }
+                } else if (actor) {
+                        if (approach) {
+                                description = game.i18n.format('Genesys.Rolls.Description.SkillApproach', {
+                                        skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
+                                        approach: game.i18n.localize(`Genesys.Approach.${approach.capitalize()}`),
+                                });
+                        } else if (characteristic) {
+                                description = game.i18n.format('Genesys.Rolls.Description.Skill', {
+                                        skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
+                                        characteristic: game.i18n.localize(`Genesys.CharacteristicAbbr.${characteristic.capitalize()}`),
+                                        superChar: usesSuperCharacteristic ? 'super-char' : 'hide-it',
+                                });
+                        } else {
+                                description = game.i18n.format('Genesys.Rolls.Description.SkillWithoutCharacteristic', {
+                                        skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
+                                });
+                        }
+                }
 
 		const rollData = {
 			description: description,
@@ -136,21 +148,23 @@ export default class GenesysRoller {
 		await ChatMessage.create(chatData);
 	}
 
-	static async attackRoll({
-		actor,
-		characteristic,
-		usesSuperCharacteristic,
-		skillId,
-		formula,
-		symbols,
-		weapon,
-	}: {
-		actor?: GenesysActor;
-		characteristic?: Characteristic;
-		usesSuperCharacteristic: boolean;
-		skillId: string;
-		formula: string;
-		symbols: Record<string, number>;
+        static async attackRoll({
+                actor,
+                approach,
+                characteristic,
+                usesSuperCharacteristic,
+                skillId,
+                formula,
+                symbols,
+                weapon,
+        }: {
+                actor?: GenesysActor;
+                approach?: Approach;
+                characteristic?: Characteristic;
+                usesSuperCharacteristic: boolean;
+                skillId: string;
+                formula: string;
+                symbols: Record<string, number>;
 		weapon: GenesysItem<WeaponDataModel | VehicleWeaponDataModel>;
 	}) {
 		const roll = new Roll(formula, { symbols });
@@ -172,27 +186,38 @@ export default class GenesysRoller {
 			totalDamage += results.netSuccess;
 		}
 
-		if (skillId === '-') {
-			if (characteristic) {
-				description = game.i18n.format('Genesys.Rolls.Description.AttackCharacteristic', {
-					name: weapon.name,
-					characteristic: game.i18n.localize(`Genesys.Characteristics.${characteristic.capitalize()}`),
-				});
-			}
-		} else if (actor) {
-			if (characteristic) {
-				description = game.i18n.format('Genesys.Rolls.Description.AttackSkill', {
-					name: weapon.name,
-					skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
-					characteristic: game.i18n.localize(`Genesys.CharacteristicAbbr.${characteristic.capitalize()}`),
-					superChar: usesSuperCharacteristic ? 'super-char' : 'hide-it',
-				});
-			} else {
-				description = game.i18n.format('Genesys.Rolls.Description.AttackSkillWithoutCharacteristic', {
-					name: weapon.name,
-					skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
-				});
-			}
+                if (skillId === '-') {
+                        if (approach) {
+                                description = game.i18n.format('Genesys.Rolls.Description.AttackApproach', {
+                                        name: weapon.name,
+                                        approach: game.i18n.localize(`Genesys.Approach.${approach.capitalize()}`),
+                                });
+                        } else if (characteristic) {
+                                description = game.i18n.format('Genesys.Rolls.Description.AttackCharacteristic', {
+                                        name: weapon.name,
+                                        characteristic: game.i18n.localize(`Genesys.Characteristics.${characteristic.capitalize()}`),
+                                });
+                        }
+                } else if (actor) {
+                        if (approach) {
+                                description = game.i18n.format('Genesys.Rolls.Description.AttackSkillApproach', {
+                                        name: weapon.name,
+                                        skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
+                                        approach: game.i18n.localize(`Genesys.Approach.${approach.capitalize()}`),
+                                });
+                        } else if (characteristic) {
+                                description = game.i18n.format('Genesys.Rolls.Description.AttackSkill', {
+                                        name: weapon.name,
+                                        skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
+                                        characteristic: game.i18n.localize(`Genesys.CharacteristicAbbr.${characteristic.capitalize()}`),
+                                        superChar: usesSuperCharacteristic ? 'super-char' : 'hide-it',
+                                });
+                        } else {
+                                description = game.i18n.format('Genesys.Rolls.Description.AttackSkillWithoutCharacteristic', {
+                                        name: weapon.name,
+                                        skill: actor.items.get(skillId)?.name ?? 'UNKNOWN',
+                                });
+                        }
 		}
 
 		const attackQualities = weapon.systemData.qualities;

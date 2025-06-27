@@ -4,6 +4,7 @@ import { ActorSheetContext, RootContext } from '@/vue/SheetContext';
 import CharacterDataModel from '@/actor/data/CharacterDataModel';
 import CharacterMeta from '@/vue/sheets/actor/character/CharacterMeta.vue';
 import CombatStat from '@/vue/components/character/CombatStat.vue';
+import ApproachEditor from '@/vue/components/character/ApproachEditor.vue';
 import Localized from '@/vue/components/Localized.vue';
 import EffectsView from '@/vue/views/EffectsView.vue';
 
@@ -38,10 +39,11 @@ onBeforeUpdate(updateEffects);
 </script>
 
 <template>
-	<div class="character-sheet">
-		<CharacterMeta />
+        <div class="character-sheet">
+                <CharacterMeta />
+                <ApproachEditor />
 
-		<section class="combat-stat-row">
+                <section class="combat-stat-row">
 			<CombatStat label="Genesys.Labels.SoakValue" :value="system.totalSoak" />
 
 			<CombatStat
