@@ -8,6 +8,7 @@ import { computed, inject, toRaw } from 'vue';
 import CharacterDataModel from '@/actor/data/CharacterDataModel';
 import { EntryType as JournalEntryType } from '@/actor/data/character/ExperienceJournal';
 import { ActorSheetContext, RootContext } from '@/vue/SheetContext';
+import CharacterSheet from '@/actor/sheets/CharacterSheet';
 import Characteristic from '@/vue/components/character/Characteristic.vue';
 import SkillDataModel from '@/item/data/SkillDataModel';
 import Localized from '@/vue/components/Localized.vue';
@@ -19,7 +20,7 @@ import MenuItem from '@/vue/components/MenuItem.vue';
 import MasonryWall from '@yeger/vue-masonry-wall';
 import { Approach } from '@/data/Approaches';
 
-const context = inject<ActorSheetContext<CharacterDataModel>>(RootContext)!;
+const context = inject<ActorSheetContext<CharacterDataModel, CharacterSheet>>(RootContext)!;
 const system = computed(() => context.data.actor.systemData);
 
 const SKILL_CATEGORY_SORT_ORDER = {
@@ -40,6 +41,12 @@ const freeRankUpLabel = game.i18n.localize('Genesys.Labels.FreeRankUp');
 const freeRankDownLabel = game.i18n.localize('Genesys.Labels.FreeRankDown');
 const editLabel = game.i18n.localize('Genesys.Labels.Edit');
 const deleteLabel = game.i18n.localize('Genesys.Labels.Delete');
+const addSkillLabel = game.i18n.localize('Genesys.Labels.AddSkill');
+
+async function addSkill() {
+        const skill = await toRaw(context.sheet).createSkill({ name: addSkillLabel, type: 'skill' });
+        await skill?.sheet?.render(true);
+}
 
 async function rollSkill(skill: GenesysItem<SkillDataModel>) {
 	await DicePrompt.promptForRoll(toRaw(context.data.actor), skill.name);
@@ -116,8 +123,11 @@ async function deleteSkill(skill: GenesysItem<SkillDataModel>) {
                         />
                 </div>
 
-		<div class="skills-row">
-			<MasonryWall :column-width="300" :items="skillCategories" :gap="8">
+                <div class="skills-row">
+                        <div class="add-skill">
+                                <a @click="addSkill"><i class="fas fa-plus"></i> {{ addSkillLabel }}</a>
+                        </div>
+                        <MasonryWall :column-width="300" :items="skillCategories" :gap="8">
 				<template #default="{ item: skillCategory, index }">
 					<div class="skill-category" :style="`position: relative; z-index: ${skillCategories.length - index}`">
 						<div class="header">
@@ -167,19 +177,25 @@ async function deleteSkill(skill: GenesysItem<SkillDataModel>) {
                                                                         <i v-if="skill.system.career" class="fas fa-stars"></i>
                                                                 </a>
 
-								<span class="rank-display">
-									{{ skill.system.rank }}
+                                                                <span class="rank-display">
+                                                                        {{ skill.system.rank }}
 
-									<a
-										v-if="
-											skill.systemData.rank < 5 &&
-											((skill.systemData.career && system.availableXP >= 5 * (skill.systemData.rank + 1)) || (!skill.systemData.career && system.availableXP >= 5 * (skill.systemData.rank + 1) + 5))
-										"
-										@click="purchaseSkillRank(skill)"
-									>
-										<i class="fas fa-arrow-circle-up" />
-									</a>
-								</span>
+                                                                        <a
+                                                                               v-if="
+                                                                               skill.systemData.rank < 5 &&
+                                                                               ((skill.systemData.career && system.availableXP >= 5 * (skill.systemData.rank + 1)) || (!skill.systemData.career && system.availableXP >= 5 * (skill.systemData.rank + 1) + 5))
+                                                                               "
+                                                                               @click="purchaseSkillRank(skill)"
+                                                                        >
+                                                                               <i class="fas fa-arrow-circle-up" />
+                                                                        </a>
+                                                                        <a v-if="skill.systemData.rank > 0" @click="freeSkillRank(skill, -1)">
+                                                                               <i class="fas fa-arrow-circle-down" />
+                                                                        </a>
+                                                                        <a v-if="context.data.editable" @click="deleteSkill(skill)">
+                                                                               <i class="fas fa-trash" />
+                                                                        </a>
+                                                                </span>
 
 							</ContextMenu>
 						</div>
@@ -246,11 +262,20 @@ async function deleteSkill(skill: GenesysItem<SkillDataModel>) {
 }
 
 .skills-row {
-	position: relative;
-	z-index: 1;
-	width: 100%;
-	padding-left: 0.5em;
-	padding-right: 0.5em;
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        padding-left: 0.5em;
+        padding-right: 0.5em;
+
+        .add-skill {
+                text-align: right;
+                margin-bottom: 0.25rem;
+
+                a {
+                        font-family: 'Bebas Neue', sans-serif;
+                }
+        }
 
 	.skill-category {
 		container: skill-category / inline-size;
