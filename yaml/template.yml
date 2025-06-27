@@ -15,6 +15,12 @@ Actor:
         cunning: 0
         willpower: 0
         presence: 0
+    # Basic approaches for Hisuya
+    approaches:
+      approaches:
+        push: 0
+        maneuver: 0
+        focus: 0
     # Adversaries
     adversary:
       soak: 0
@@ -35,6 +41,7 @@ Actor:
   character:
     templates:
       - characteristics
+      - approaches
       - motivations
     defense:
       melee: 0
@@ -58,6 +65,10 @@ Actor:
       notableFeatures: ''
     # A general notes field for anything the player would like to keep on their sheet.
     notes: ''
+    # Resource pool used by narrative abilities
+    resource: 0
+    # Narrative abilities list
+    abilities: []
     # Experience Journal data
     experienceJournal:
       # Individual entries noting where experience points were spent or earned.
@@ -77,6 +88,7 @@ Actor:
   minion:
     templates:
       - characteristics
+      - approaches
       - adversary
       - motivations
     # Base number of minions in the group by default. This will likely be edited on a per-token basis.
@@ -89,6 +101,7 @@ Actor:
   rival:
     templates:
       - characteristics
+      - approaches
       - adversary
       - motivations
     wounds:
@@ -97,6 +110,7 @@ Actor:
   nemesis:
     templates:
       - characteristics
+      - approaches
       - adversary
       - motivations
     wounds:
@@ -194,6 +208,10 @@ Item:
       detail: ''
   archetype:
     templates: [basic]
+    approaches:
+      push: 0
+      maneuver: 0
+      focus: 0
     # Characteristics values granted by the archetype.
     characteristics:
       brawn: 2

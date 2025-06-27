@@ -13,6 +13,7 @@ import GenesysItem from '@/item/GenesysItem';
 import ArmorDataModel from '@/item/data/ArmorDataModel';
 import EquipmentDataModel, { EquipmentState } from '@/item/data/EquipmentDataModel';
 import { Characteristic, CharacteristicsContainer } from '@/data/Characteristics';
+import { Approach, ApproachesContainer } from '@/data/Approaches';
 import { CombatPool, Defense } from '@/data/Actors';
 import GenesysEffect from '@/effects/GenesysEffect';
 import TalentDataModel from '@/item/data/TalentDataModel';
@@ -41,8 +42,14 @@ type Details = {
 };
 
 type Encumbrance = {
-	value: number;
-	threshold: number;
+        value: number;
+        threshold: number;
+};
+
+export type NarrativeAbility = {
+       name: string;
+       description: string;
+       cost: number;
 };
 
 type CharacterActor = GenesysActor<CharacterDataModel>;
@@ -63,7 +70,8 @@ type RelevantTypes = {
 };
 
 export default abstract class CharacterDataModel extends foundry.abstract.DataModel implements IHasPreCreate<CharacterActor> {
-	abstract characteristics: CharacteristicsContainer;
+        abstract characteristics: CharacteristicsContainer;
+        abstract approaches: ApproachesContainer;
 	abstract soak: number;
 	abstract defense: Defense;
 	abstract wounds: CombatPool;
@@ -72,9 +80,11 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 	abstract motivations: Motivations;
 	abstract details: Details;
 	abstract experienceJournal: ExperienceJournal;
-	abstract encumbrance: Encumbrance;
-	abstract currency: number;
-	abstract notes: string;
+       abstract encumbrance: Encumbrance;
+       abstract currency: number;
+       abstract resource: number;
+       abstract abilities: NarrativeAbility[];
+       abstract notes: string;
 	abstract superCharacteristics: Set<Characteristic>;
 
 	/**
@@ -107,14 +117,20 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 			valuePath: 'wounds.value',
 			maxPath: 'wounds.max',
 		},
-		strain: {
-			label: 'Strain',
-			isBar: true,
-			editable: true,
-			valuePath: 'strain.value',
-			maxPath: 'strain.max',
-		},
-		soak: {
+                strain: {
+                        label: 'Strain',
+                        isBar: true,
+                        editable: true,
+                        valuePath: 'strain.value',
+                        maxPath: 'strain.max',
+                },
+                resource: {
+                        label: 'Resource',
+                        isBar: false,
+                        editable: true,
+                        valuePath: 'resource',
+                },
+                soak: {
 			label: 'Soak',
 			isBar: false,
 			editable: false,
@@ -191,11 +207,33 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 	/**
 	 * Whether the character is currently encumbered.
 	 */
-	get isEncumbered() {
-		const currentEncumbrance = this.currentEncumbrance;
+        get isEncumbered() {
+                const currentEncumbrance = this.currentEncumbrance;
 
-		return currentEncumbrance.value > currentEncumbrance.threshold;
-	}
+                return currentEncumbrance.value > currentEncumbrance.threshold;
+        }
+
+        /**
+         * Use a narrative ability by index.
+         */
+        async useAbility(index: number) {
+                const ability = this.abilities[index];
+                if (!ability) {
+                        return;
+                }
+
+                if (this.resource < ability.cost) {
+                        ui.notifications.warn('Hisuya.NotEnoughResource');
+                        return;
+                }
+
+                await (this.parent as unknown as Actor).update({ 'system.resource': this.resource - ability.cost });
+                const enriched = await TextEditor.enrichHTML(ability.description, { async: true });
+                await ChatMessage.create({
+                        speaker: ChatMessage.getSpeaker({ actor: this.parent as unknown as Actor }),
+                        content: `<strong>${ability.name}</strong><br/>${enriched}`,
+                });
+        }
 
 	get talentPyramidTotals() {
 		const allTalents = (<CharacterActor>(<unknown>this.parent)).items.filter((i) => i.type === 'talent') as GenesysItem<TalentDataModel>[];
@@ -349,11 +387,16 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 	static override defineSchema() {
 		const fields = foundry.data.fields;
 
-		return {
-			characteristics: new fields.SchemaField({
-				brawn: new fields.NumberField({ integer: true, initial: 0 }),
-				agility: new fields.NumberField({ integer: true, initial: 0 }),
-				intellect: new fields.NumberField({ integer: true, initial: 0 }),
+                return {
+                        approaches: new fields.SchemaField({
+                                push: new fields.NumberField({ integer: true, initial: 0 }),
+                                maneuver: new fields.NumberField({ integer: true, initial: 0 }),
+                                focus: new fields.NumberField({ integer: true, initial: 0 }),
+                        }),
+                        characteristics: new fields.SchemaField({
+                                brawn: new fields.NumberField({ integer: true, initial: 0 }),
+                                agility: new fields.NumberField({ integer: true, initial: 0 }),
+                                intellect: new fields.NumberField({ integer: true, initial: 0 }),
 				cunning: new fields.NumberField({ integer: true, initial: 0 }),
 				willpower: new fields.NumberField({ integer: true, initial: 0 }),
 				presence: new fields.NumberField({ integer: true, initial: 0 }),
@@ -413,8 +456,16 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 				value: new fields.NumberField({ integer: true, initial: 0 }),
 				threshold: new fields.NumberField({ integer: true, initial: 0 }),
 			}),
-			currency: new fields.NumberField({ initial: 500 }),
-			superCharacteristics: new fields.SetField(new fields.StringField()),
-		};
-	}
+                        currency: new fields.NumberField({ initial: 500 }),
+                        resource: new fields.NumberField({ integer: true, initial: 0 }),
+                        abilities: new fields.ArrayField(
+                                new fields.SchemaField({
+                                        name: new fields.StringField(),
+                                        description: new fields.HTMLField(),
+                                        cost: new fields.NumberField({ integer: true, initial: 0 }),
+                                }),
+                        ),
+                        superCharacteristics: new fields.SetField(new fields.StringField()),
+                };
+        }
 }

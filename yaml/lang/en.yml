@@ -229,6 +229,7 @@ Genesys:
     CannotDeleteInvalidTalentPyramid: Cannot delete XP Journal Entry for talent of rank {rank} to preserve the talent pyramid structure. Try deleting talents of higher rank first.
     CannotPurchaseTalentTier: Cannot purchase talents at tier {tier} - you must have at least {minimum} talents at rank {lowerTier} first.
     NotEnoughStoryPoints: You can't spend Story Points you don't have!
+    NotEnoughResource: You don't have enough resource!
     SelectOneTokenForAction: You need to selected a single token to perform this action.
     SelectNoneOrOneTokenForAction: You need to select no tokens, or a single token, to perform this action.
     TokenIsNotCombatant: The selected token is not participating on the current combat.
@@ -311,6 +312,12 @@ Genesys:
     Cunning: Cun
     Willpower: Will
     Presence: Pr
+
+  # Approach Labels
+  Approach:
+    Push: Push
+    Maneuver: Maneuver
+    Focus: Focus
 
   # Skill Categories
   SkillCategory:

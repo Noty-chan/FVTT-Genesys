@@ -24,6 +24,9 @@ languages:
   - lang: es
     name: Español
     path: lang/es.json
+  - lang: ru
+    name: Русский
+    path: lang/ru.json
 packs:
   - name: crb-skills
     label: Core Skills
