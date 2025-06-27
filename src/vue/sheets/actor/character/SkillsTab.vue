@@ -44,7 +44,9 @@ const deleteLabel = game.i18n.localize('Genesys.Labels.Delete');
 const addSkillLabel = game.i18n.localize('Genesys.Labels.AddSkill');
 
 async function addSkill() {
-        const skill = await toRaw(context.sheet).createSkill({ name: addSkillLabel, type: 'skill' });
+        const skill = await toRaw(context.sheet).createSkill(
+                { name: addSkillLabel, type: 'skill' } as foundry.data.ItemSource<'skill'>,
+        );
         await skill?.sheet?.render(true);
 }
 
