@@ -89,7 +89,7 @@ function damageForWeapon(weapon: GenesysItem<WeaponDataModel>) {
 					<div class="skill" v-for="skill in [skillForWeapon(weapon)]" :key="skill?.id ?? 'skill'">
 						<template v-if="skill">
 							{{ skill.name }}
-							<SkillRanks :skill-value="skill.systemData.rank" :characteristic-value="actor.systemData.characteristics[skill.systemData.characteristic]" />
+                                                        <SkillRanks :skill-value="skill.systemData.rank" />
 						</template>
 						<span v-else><Localized label="Genesys.Labels.SkillNotFound" /></span>
 					</div>

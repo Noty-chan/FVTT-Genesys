@@ -43,11 +43,10 @@ function submitSelection(event: Event) {
 
 			<div class="skill-name">{{ characterSkillOption.skill.name }}</div>
 			<div class="skill-rank">{{ characterSkillOption.skill.systemData.rank }}</div>
-			<SkillRanks
-				:skill-value="characterSkillOption.skill.systemData.rank"
-				:characteristic-value="(characterSkillOption.actor.systemData as _NonVehicleDataModel).characteristics[characterSkillOption.skill.systemData.characteristic]"
-			/>
-		</div>
+                        <SkillRanks
+                                :skill-value="characterSkillOption.skill.systemData.rank"
+                        />
+                </div>
 
 		<button class="submit-button" @click="submitSelection" :disabled="selectedOptionIndex < 0"><Localized label="Genesys.Labels.Select" /></button>
 	</div>
