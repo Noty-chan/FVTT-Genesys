@@ -12,9 +12,13 @@ labels:
   approach:
     push: Нажим
     maneuver: Маневр
-  focus: Фокус
+    focus: Фокус
 
 Genesys:
+  Approach:
+    Push: Нажим
+    Maneuver: Маневр
+    Focus: Фокус
   Archetype:
     Abilities: Способности архетипа
   Adversary:

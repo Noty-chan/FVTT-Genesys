@@ -313,6 +313,12 @@ Genesys:
     Willpower: Will
     Presence: Pr
 
+  # Approach Labels
+  Approach:
+    Push: Push
+    Maneuver: Maneuver
+    Focus: Focus
+
   # Skill Categories
   SkillCategory:
     General: General
