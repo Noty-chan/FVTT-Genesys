@@ -17,7 +17,7 @@ export function zip() {
 	}
 
 	return src('dist/**/*')
-		.pipe(gulpZip(`genesys-${version}.zip`))
+		.pipe(gulpZip(`system.zip`))
 		.pipe(dest('.'));
 }
 
