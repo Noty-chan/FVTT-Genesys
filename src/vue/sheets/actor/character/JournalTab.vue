@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed, inject, toRaw } from 'vue';
+import type { CustomFieldData } from '@/data/CustomFieldData';
 
 import CharacterDataModel from '@/actor/data/CharacterDataModel';
 import { EntryType as JournalEntryType, removeJournalEntry } from '@/actor/data/character/ExperienceJournal';
@@ -14,8 +15,8 @@ import CustomField from '@/vue/components/CustomField.vue';
 const context = inject<ActorSheetContext<CharacterDataModel>>(RootContext)!;
 
 const system = computed(() => context.data.actor.systemData);
-const customFields = computed(() =>
-        toRaw(context.data.actor).getFlag('genesys', 'customFields') ?? []
+const customFields = computed<CustomFieldData[]>(() =>
+        (toRaw(context.data.actor).getFlag('genesys', 'customFields') ?? []) as CustomFieldData[]
 );
 
 async function addXPJournalEntry() {
