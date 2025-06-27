@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import VehicleDataModel from '@/actor/data/VehicleDataModel';
 import { inject, computed, toRaw } from 'vue';
+import type { CustomFieldData } from '@/data/CustomFieldData';
 import { ActorSheetContext, RootContext } from '@/vue/SheetContext';
 import Localized from '@/vue/components/Localized.vue';
 import Editor from '@/vue/components/Editor.vue';
@@ -8,8 +9,8 @@ import CustomField from '@/vue/components/CustomField.vue';
 
 const context = inject<ActorSheetContext<VehicleDataModel>>(RootContext)!;
 const system = computed(() => toRaw(context.data.actor).systemData);
-const customFields = computed(() =>
-        toRaw(context.data.actor).getFlag('genesys', 'customFields') ?? []
+const customFields = computed<CustomFieldData[]>(() =>
+        (toRaw(context.data.actor).getFlag('genesys', 'customFields') ?? []) as CustomFieldData[]
 );
 
 async function addField() {

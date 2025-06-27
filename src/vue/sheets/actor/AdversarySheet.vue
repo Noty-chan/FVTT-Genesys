@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed, inject, onBeforeMount, onBeforeUpdate, ref, toRaw, watchEffect } from 'vue';
+import type { CustomFieldData } from '@/data/CustomFieldData';
 import { ActorSheetContext, RootContext } from '@/vue/SheetContext';
 import Characteristic from '@/vue/components/character/Characteristic.vue';
 import Localized from '@/vue/components/Localized.vue';
@@ -23,8 +24,8 @@ import CustomField from '@/vue/components/CustomField.vue';
 
 const context = inject<ActorSheetContext<AdversaryDataModel>>(RootContext)!;
 const system = computed(() => toRaw(context.data.actor).systemData);
-const customFields = computed(() =>
-        toRaw(context.data.actor).getFlag('genesys', 'customFields') ?? []
+const customFields = computed<CustomFieldData[]>(() =>
+        (toRaw(context.data.actor).getFlag('genesys', 'customFields') ?? []) as CustomFieldData[]
 );
 
 const skills = computed(() => toRaw(context.data.actor).items.filter((i) => i.type === 'skill') as GenesysItem<SkillDataModel>[]);
