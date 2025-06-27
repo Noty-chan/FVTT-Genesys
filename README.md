@@ -25,7 +25,7 @@ To work on the system locally, install dependencies and run the provided checks:
 ```bash
 yarn install
 yarn lint
-yarn test
+yarn test   # запускает встроенный в Node.js тест-раннер
 ```
 - All contributions to this project, unless otherwise noted through licenses as mentioned above, fall under the project's MIT License.
 - AI-generated code contributions are not permitted under any circumstances.
