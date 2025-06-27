@@ -1,13 +1,13 @@
-id: genesys
-title: Genesys
-description: (ALPHA) Unofficial implementation of EDGE Studio's Genesys RPG System.
+id: hisuya-genesys
+title: "Хисуя (Genesys Hybrid)"
+description: (ALPHA) Simplified Genesys ruleset for the Hisuya campaign.
 version: 0.2.14
 compatibility:
   minimum: 12
   verified: 12
   maximum: 12
 authors:
-  - name: Mezryss
+  - name: Noty-chan
 scripts:
   - scripts/container-query-polyfill/container-query-polyfill.modern.js
 esmodules:
@@ -30,13 +30,13 @@ languages:
 packs:
   - name: hisuya-skills
     label: Hisuya Skills
-    system: genesys
+    system: hisuya-genesys
     path: ./packs/hisuya-skills.db
     type: Item
 socket: true
-url: https://github.com/Mezryss/FVTT-Genesys
-bugs: https://github.com/Mezryss/FVTT-Genesys/issues
-changelog: https://github.com/Mezryss/FVTT-Genesys/blob/release/CHANGELOG.md
-license: https://github.com/Mezryss/FVTT-Genesys/blob/main/LICENSE
-manifest: https://github.com/Mezryss/FVTT-Genesys/releases/latest/download/manifest.json
-download: https://github.com/Mezryss/FVTT-Genesys/releases/latest/download/genesys.zip
+url: https://github.com/Noty-chan/FVTT-Genesys
+bugs: https://github.com/Noty-chan/FVTT-Genesys/issues
+changelog: https://github.com/Noty-chan/FVTT-Genesys/blob/main/CHANGELOG.md
+license: https://github.com/Noty-chan/FVTT-Genesys/blob/main/LICENSE
+manifest: https://raw.githubusercontent.com/Noty-chan/FVTT-Genesys/main/system.json
+download: https://github.com/Noty-chan/FVTT-Genesys/releases/latest/download/system.zip

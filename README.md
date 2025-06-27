@@ -1,5 +1,5 @@
-# FVTT Genesys
-An implementation of [EDGE Studio](https://edge-studio.net/)'s Genesys roleplaying game.
+# Хисуя (Genesys Hybrid)
+Форк системы Genesys, адаптированный для кампании «Хисуя».
 
 ## Screenshots
 #### Character Sheet
@@ -26,6 +26,10 @@ To work on the system locally, install dependencies and run the provided checks:
 yarn install
 yarn lint
 yarn test   # запускает встроенный в Node.js тест-раннер
+```
+Для создания архива системы используйте:
+```bash
+yarn release
 ```
 - All contributions to this project, unless otherwise noted through licenses as mentioned above, fall under the project's MIT License.
 - AI-generated code contributions are not permitted under any circumstances.
