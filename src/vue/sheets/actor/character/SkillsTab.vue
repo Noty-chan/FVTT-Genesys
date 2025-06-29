@@ -110,10 +110,7 @@ async function purchaseSkillRank(skill: GenesysItem<SkillDataModel>) {
                 return;
         }
 
-        const spent = await toRaw(context.data.actor).system.spendXP(1, 'skill:' + skill.name);
-        if (!spent) {
-                return;
-        }
+        await toRaw(context.data.actor).systemData.spendXP(1, 'skill:' + skill.name);
 
         await toRaw(skill).update({
                 'system.rank': skill.systemData.rank + 1,
