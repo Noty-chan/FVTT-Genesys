@@ -15,6 +15,8 @@ import Localized from '@/vue/components/Localized.vue';
 import GenesysItem from '@/item/GenesysItem';
 import XPContainer from '@/vue/components/character/XPContainer.vue';
 import DicePrompt from '@/app/DicePrompt';
+import ApproachPrompt from '@/app/ApproachPrompt';
+import GenesysRoller from '@/dice/GenesysRoller';
 import ContextMenu from '@/vue/components/ContextMenu.vue';
 import MenuItem from '@/vue/components/MenuItem.vue';
 import MasonryWall from '@yeger/vue-masonry-wall';
@@ -31,9 +33,26 @@ const SKILL_CATEGORY_SORT_ORDER = {
 	knowledge: 4,
 };
 
-const skills = computed(() => toRaw(context.data.actor).items.filter((i) => i.type === 'skill') as GenesysItem<SkillDataModel>[]);
+const skills = computed(() => {
+        const owned = new Map(
+                toRaw(context.data.actor).items
+                        .filter((i) => i.type === 'skill')
+                        .map((i) => [i.name, i as GenesysItem<SkillDataModel>]),
+        );
+        return CONFIG.genesys.skills.map(
+                (s: GenesysItem<SkillDataModel>) => owned.get(s.name) ?? s,
+        );
+});
 
-const skillCategories = computed(() => Array.from(new Set(skills.value.map((s) => s.systemData.category).sort((left, right) => SKILL_CATEGORY_SORT_ORDER[left] - SKILL_CATEGORY_SORT_ORDER[right]))));
+const skillCategories = computed(() =>
+        Array.from(
+                new Set(
+                        CONFIG.genesys.skills
+                                .map((s: GenesysItem<SkillDataModel>) => s.systemData.category)
+                                .sort((l, r) => SKILL_CATEGORY_SORT_ORDER[l] - SKILL_CATEGORY_SORT_ORDER[r]),
+                ),
+        ),
+);
 
 const markCareerLabel = game.i18n.localize('Genesys.Labels.MarkCareerSkill');
 const unmarkCareerLabel = game.i18n.localize('Genesys.Labels.UnmarkCareerSkill');
@@ -54,34 +73,35 @@ async function addSkill() {
 }
 
 async function rollSkill(skill: GenesysItem<SkillDataModel>) {
-	await DicePrompt.promptForRoll(toRaw(context.data.actor), skill.name);
+        const approach = await ApproachPrompt.promptForApproach();
+        if (!approach) {
+                return;
+        }
+
+        await GenesysRoller.skillRoll({
+                actor: toRaw(context.data.actor),
+                approach,
+                usesSuperCharacteristic: false,
+                skillId: skill.id,
+                formula: '',
+                symbols: {},
+        });
 }
 
 
 async function purchaseSkillRank(skill: GenesysItem<SkillDataModel>) {
-	const cost = 5 * (skill.systemData.rank + 1) + (skill.systemData.career ? 0 : 5);
-	if (skill.systemData.rank >= 5 || system.value.availableXP < cost) {
-		return;
-	}
+        if (skill.systemData.rank >= 5 || system.value.availableXP < 1) {
+                return;
+        }
 
-	await toRaw(skill).update({
-		'system.rank': skill.systemData.rank + 1,
-	});
+        const spent = await toRaw(context.data.actor).system.spendXP(1, 'skill:' + skill.name);
+        if (!spent) {
+                return;
+        }
 
-	await toRaw(context.data.actor).update({
-		'system.experienceJournal.entries': [
-			...system.value.experienceJournal.entries,
-			{
-				amount: -cost,
-				type: JournalEntryType.Skill,
-				data: {
-					name: skill.name,
-					id: skill.id,
-					rank: skill.systemData.rank,
-				},
-			},
-		],
-	});
+        await toRaw(skill).update({
+                'system.rank': skill.systemData.rank + 1,
+        });
 }
 
 async function toggleCareerSkill(skill: GenesysItem<SkillDataModel>) {
@@ -185,13 +205,7 @@ async function deleteSkill(skill: GenesysItem<SkillDataModel>) {
                                                                 <span class="rank-display">
                                                                         {{ skill.system.rank }}
 
-                                                                        <a
-                                                                               v-if="
-                                                                               skill.systemData.rank < 5 &&
-                                                                               ((skill.systemData.career && system.availableXP >= 5 * (skill.systemData.rank + 1)) || (!skill.systemData.career && system.availableXP >= 5 * (skill.systemData.rank + 1) + 5))
-                                                                               "
-                                                                               @click="purchaseSkillRank(skill)"
-                                                                        >
+                                                                        <a v-if="skill.systemData.rank < 5 && system.availableXP >= 1" @click="purchaseSkillRank(skill)">
                                                                                <i class="fas fa-arrow-circle-up" />
                                                                         </a>
                                                                         <a v-if="skill.systemData.rank > 0" @click="freeSkillRank(skill, -1)">

@@ -6,14 +6,8 @@
  * @file Skill Data
  */
 import BaseItemDataModel from '@/item/data/BaseItemDataModel';
-import { Characteristic } from '@/data/Characteristics';
 
 export default abstract class SkillDataModel extends BaseItemDataModel {
-	/**
-	 * Characteristic tied to the skill.
-	 */
-	abstract characteristic: Characteristic;
-
 	/**
 	 * Skill category
 	 */
@@ -39,10 +33,6 @@ export default abstract class SkillDataModel extends BaseItemDataModel {
 
 		return {
 			...super.defineSchema(),
-			characteristic: new fields.StringField({
-				initial: Characteristic.Brawn,
-				choices: ['brawn', 'agility', 'intellect', 'cunning', 'willpower', 'presence'],
-			}),
 			category: new fields.StringField({
 				initial: 'general',
 				choices: ['general', 'magic', 'combat', 'social', 'knowledge'],
