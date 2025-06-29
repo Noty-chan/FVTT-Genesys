@@ -53,8 +53,10 @@ async function addSkill() {
   const tpl = unused.find((s) => s.id === choice)!;
   const src = duplicate(tpl.toObject()) as any;
   src._id = foundry.utils.randomID();
-  await ctx.sheet!.createSkill(src);
+  src.type = "skill";
+  await ctx.data.actor.createEmbeddedDocuments("Item", [src]);
 }
+
 
 // Ранг навыка
 async function rankAdjust(skill: GenesysItem<SkillDataModel>, delta: number) {
