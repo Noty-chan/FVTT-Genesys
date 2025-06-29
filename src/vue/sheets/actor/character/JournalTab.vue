@@ -9,6 +9,7 @@ import Localized from '@/vue/components/Localized.vue';
 import Editor from '@/vue/components/Editor.vue';
 import AwardXPPrompt from '@/app/AwardXPPrompt';
 import XPContainer from '@/vue/components/character/XPContainer.vue';
+import ResourceDots from '@/vue/components/character/ResourceDots.vue';
 import NarrativeAbilities from '@/vue/sheets/actor/character/NarrativeAbilities.vue';
 import CustomField from '@/vue/components/CustomField.vue';
 
@@ -196,11 +197,17 @@ async function deleteField(index: number) {
 			</div>
 		</section>
 
-		<section class="experience">
-			<XPContainer label="Genesys.Labels.TotalXP" :value="system.totalXP" />
-			<XPContainer label="Genesys.Labels.AvailableXP" :value="system.availableXP" />
-		</section>
-	</section>
+                <section class="experience">
+                        <XPContainer label="Genesys.Labels.TotalXP" :value="system.totalXP" />
+                        <XPContainer label="Genesys.Labels.AvailableXP" :value="system.availableXP" />
+                </section>
+
+                <section class="resources">
+                        <ResourceDots label="Genesys.Labels.Contacts" :value="system.contacts" icon="fas fa-user-friends" />
+                        <ResourceDots label="Genesys.Labels.Intel" :value="system.intel" icon="fas fa-lightbulb" />
+                        <ResourceDots label="Genesys.Labels.Will" :value="system.will" icon="fas fa-bolt" />
+                </section>
+        </section>
 </template>
 
 <style lang="scss" scoped>
@@ -210,7 +217,7 @@ async function deleteField(index: number) {
 .tab-journal {
 	display: grid;
 	grid-template-columns: 1fr min(33%, 250px);
-	grid-template-rows: /* Motivations */ auto /* Notes */ auto /* XP Journal */ 1fr /* Experience Fields */ auto;
+       grid-template-rows: /* Motivations */ auto /* Notes */ auto /* XP Journal */ 1fr /* Experience Fields */ auto /* Resources */ auto;
 	gap: 0.5em;
 	padding: 0.5em;
 
@@ -219,13 +226,21 @@ async function deleteField(index: number) {
 		border-radius: 1em;
 		padding: 0.75em;
 
-		&.experience {
-			background: none;
-			grid-column: 1 / span all;
-			display: grid;
-			grid-template-columns: auto 1fr auto;
-			width: 100%;
-		}
+                &.experience {
+                        background: none;
+                        grid-column: 1 / span all;
+                        display: grid;
+                        grid-template-columns: auto 1fr auto;
+                        width: 100%;
+                }
+
+                &.resources {
+                        background: none;
+                        grid-column: 1 / span all;
+                        display: flex;
+                        justify-content: center;
+                        gap: 1em;
+                }
 
 		& > .header {
 			text-align: right;
