@@ -10,7 +10,6 @@ import GenesysCombat, { InitiativeSkill } from '@/combat/GenesysCombat';
 import GenesysCombatant from '@/combat/GenesysCombatant';
 import SkillDataModel from '@/item/data/SkillDataModel';
 import GenesysItem from '@/item/GenesysItem';
-import { Characteristic } from '@/data/Characteristics';
 
 export default class GenesysCombatTracker extends CombatTracker<GenesysCombat> {
 	override get template(): string {
@@ -23,14 +22,14 @@ export default class GenesysCombatTracker extends CombatTracker<GenesysCombat> {
 		if (!this.#initiativeSkills || this.#initiativeSkills.length === 0) {
 			const compendium = game.packs.get(CONFIG.genesys.settings.skillsCompendium);
 
-			if (!compendium) {
-				return [{ skillName: 'Unskilled', skillChar: Characteristic.Brawn }];
-			}
+                        if (!compendium) {
+                                return [{ skillName: 'Unskilled' }];
+                        }
 
-			this.#initiativeSkills = (await compendium.getDocuments())
-				.filter((i) => (i as Item).type === 'skill' && (i as GenesysItem<SkillDataModel>).systemData.initiative)
-				.map((s) => ({ skillName: s.name, skillChar: (s as GenesysItem<SkillDataModel>).systemData.characteristic }));
-		}
+                        this.#initiativeSkills = (await compendium.getDocuments())
+                                .filter((i) => (i as Item).type === 'skill' && (i as GenesysItem<SkillDataModel>).systemData.initiative)
+                                .map((s) => ({ skillName: s.name }));
+                }
 
 		return this.#initiativeSkills;
 	}

@@ -13,7 +13,7 @@ import GenesysCombat, { InitiativeSkill } from '@/combat/GenesysCombat';
 import GenesysItem from '@/item/GenesysItem';
 import SkillDataModel from '@/item/data/SkillDataModel';
 import MinionDataModel from '@/actor/data/MinionDataModel';
-import { Characteristic } from '@/data/Characteristics';
+import { Approach } from '@/data/Approaches';
 import GenesysRoller from '@/dice/GenesysRoller';
 
 export default class GenesysCombatant extends Combatant<GenesysCombat, GenesysActor> {
@@ -43,22 +43,19 @@ export default class GenesysCombatant extends Combatant<GenesysCombat, GenesysAc
 		return this.update({ initiative: results.netSuccess + results.netAdvantage / 100 });
 	}
 
-	override getInitiativeRoll(skillName: string = 'Unskilled', charFallback: Characteristic = Characteristic.Brawn) {
-		const skill = this.actor.items.find((i) => i.type === 'skill' && i.name.toLowerCase() === skillName.toLowerCase()) as GenesysItem<SkillDataModel> | undefined;
-		const characteristic = skill?.systemData?.characteristic ?? charFallback;
-		const system = this.actor.systemData as CharacterDataModel | AdversaryDataModel;
-		const characteristicValue = system.characteristics[characteristic];
+       override getInitiativeRoll(skillName: string = 'Unskilled', approach: Approach = Approach.Push) {
+                const skill = this.actor.items.find((i) => i.type === 'skill' && i.name.toLowerCase() === skillName.toLowerCase()) as GenesysItem<SkillDataModel> | undefined;
+                const system = this.actor.systemData as CharacterDataModel | AdversaryDataModel;
+                const approachValue = system.approaches[approach];
 
 		let skillValue = skill?.systemData?.rank ?? 0;
 		if (skill && this.actor.type === 'minion') {
 			skillValue = Math.clamp((this.actor.systemData as MinionDataModel).remainingMembers - 1, 0, 5);
 		}
 
-		const yellow = Math.min(characteristicValue, skillValue);
-		const green = Math.max(characteristicValue, skillValue) - yellow;
+                const yellow = Math.min(approachValue, skillValue);
+                const green = Math.max(approachValue, skillValue) - yellow;
 
-		const useSuperCharacteristic = CONFIG.genesys.settings.useSuperCharacteristics && system.superCharacteristics.has(characteristic);
-
-		return new Roll(`${yellow}dP${useSuperCharacteristic ? 'X' : ''}+${green}dA`);
-	}
+                return new Roll(`${yellow}dP+${green}dA`);
+        }
 }

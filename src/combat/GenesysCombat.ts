@@ -9,7 +9,7 @@
 import GenesysCombatant from '@/combat/GenesysCombatant';
 import GenesysRoller from '@/dice/GenesysRoller';
 import DicePrompt from '@/app/DicePrompt';
-import { Characteristic } from '@/data/Characteristics';
+import { Approach } from '@/data/Approaches';
 import { ClaimInitiativeSlotData, emit as socketEmit, SOCKET_NAME, SocketOperation, SocketPayload, CombatSocketBaseData, UpdateInitiativeForExtraSlotData } from '@/socket';
 
 const FLAG_CLAIMANTS = 'claimants';
@@ -37,8 +37,7 @@ export type GenesysRollInitiativeOptions = {
 };
 
 export type InitiativeSkill = {
-	skillName: string;
-	skillChar: Characteristic;
+        skillName: string;
 };
 
 export default class GenesysCombat extends Combat {
@@ -162,10 +161,9 @@ export default class GenesysCombat extends Combat {
 				}
 			}
 
-			if (!roll) {
-				const charFallback = combatant.initiativeSkill?.skillChar ?? this.initiativeSkills[0]?.skillChar;
-				roll = combatant.getInitiativeRoll(skillName, charFallback);
-			}
+                        if (!roll) {
+                                roll = combatant.getInitiativeRoll(skillName, Approach.Push);
+                        }
 
 			await roll.evaluate();
 			const results = GenesysRoller.parseRollResults(roll);

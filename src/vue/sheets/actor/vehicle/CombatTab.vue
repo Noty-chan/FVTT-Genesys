@@ -8,6 +8,7 @@ import InjuryDataModel from '@/item/data/InjuryDataModel';
 import SkillDataModel from '@/item/data/SkillDataModel';
 import DicePrompt, { RollType } from '@/app/DicePrompt';
 import VehicleDataModel from '@/actor/data/VehicleDataModel';
+import ApproachPrompt from '@/app/ApproachPrompt';
 import { EquipmentState } from '@/item/data/EquipmentDataModel';
 import VehicleWeaponDataModel from '@/item/data/VehicleWeaponDataModel';
 
@@ -98,12 +99,15 @@ async function pickAttackerAndRollAttack(weapon: GenesysItem<VehicleWeaponDataMo
 		return;
 	}
 
+        const approach = await ApproachPrompt.promptForApproach();
+        if (!approach) {
+                return;
+        }
+
         await DicePrompt.promptForRoll(selectAttacker.actor, selectAttacker.skill.name, {
                 rollType: RollType.Attack,
                 rollData: { weapon },
-                ...(selectAttacker.skill.pack && {
-                        rollUnskilled: selectAttacker.skill.systemData.characteristic as unknown as Approach,
-                }),
+                rollUnskilled: approach,
         });
 }
 
@@ -141,11 +145,14 @@ async function repairHit(criticalHit: GenesysItem<InjuryDataModel>) {
 		return;
 	}
 
+        const approachR = await ApproachPrompt.promptForApproach();
+        if (!approachR) {
+                return;
+        }
+
         await DicePrompt.promptForRoll(selectRepairer.actor, selectRepairer.skill.name, {
                 difficulty: SEVERITY_TO_DIFFICULTY[criticalHit.systemData.severity],
-                ...(selectRepairer.skill.pack && {
-                        rollUnskilled: selectRepairer.skill.systemData.characteristic as unknown as Approach,
-                }),
+                rollUnskilled: approachR,
         });
 }
 </script>

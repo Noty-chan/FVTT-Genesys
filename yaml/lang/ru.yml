@@ -208,6 +208,10 @@ Genesys:
         Additionally, the cloned actor will appear on the 'Actors' directory as a new entry with the name specified below.
       ActorNameLabel: New Name
 
+  ApproachPrompt:
+    Title: Выбор подхода
+    Hint: Выберите подход для броска.
+
   # Experience Journal Labels
   XPJournal:
     Award: '<strong>XP Awarded by GM</strong>: {reason}'
