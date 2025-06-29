@@ -4,9 +4,8 @@
 		"module": "ES2022",
 		"moduleResolution": "Node",
 
-		"baseUrl": ".",
-		"emitDeclarationOnly": true,
-		"declaration": true,
+                "baseUrl": ".",
+                "declaration": true,
 		"declarationDir": "lib",
 
 		"strict": true,
