@@ -5,11 +5,14 @@ import CharacterDataModel from '@/actor/data/CharacterDataModel';
 import GenesysItem from '@/item/GenesysItem';
 import SkillDataModel from '@/item/data/SkillDataModel';
 
+/* -------------------------------------------------
+ *  Контекст листа
+ * ------------------------------------------------*/
 const ctx = inject<ActorSheetContext<CharacterDataModel>>(RootContext)!;
 const system = computed(() => ctx.data.actor.systemData);
 
 /* -------------------------------------------------
- *  Список навыков персонажа
+ *  Навыки персонажа
  * ------------------------------------------------*/
 const skills = computed(
   () =>
@@ -19,19 +22,77 @@ const skills = computed(
 );
 
 /* -------------------------------------------------
- *  Добавление нового навыка
+ *  Вспомогательный prompt на основе Dialog
+ * ------------------------------------------------*/
+function simplePrompt(
+  title: string,
+  placeholder = '',
+): Promise<string | null> {
+  return new Promise((resolve) => {
+    new Dialog({
+      title,
+      content: `<input type="text" name="value" style="width:100%" placeholder="${placeholder}" />`,
+      buttons: {
+        ok: {
+          label: 'OK',
+          callback: (html: JQuery) =>
+            resolve(
+              (html.find('input[name="value"]').val() as string)?.trim() || null,
+            ),
+        },
+        cancel: {
+          label: 'Отмена',
+          callback: () => resolve(null),
+        },
+      },
+      default: 'ok',
+      close: () => resolve(null),
+    }).render(true);
+  });
+}
+
+/* -------------------------------------------------
+ *  Выбор подхода
+ * ------------------------------------------------*/
+type Approach = 'push' | 'maneuver' | 'focus';
+
+function promptApproach(skillName: string): Promise<Approach | null> {
+  return new Promise((resolve) => {
+    const content = `
+      <p>Через какой подход совершается бросок <strong>${skillName}</strong>?</p>
+      <div style="display:flex; gap:0.5rem">
+        <button type="button" data-value="push">Нажим</button>
+        <button type="button" data-value="maneuver">Манёвр</button>
+        <button type="button" data-value="focus">Фокус</button>
+      </div>`;
+
+    const dlg = new Dialog({
+      title: 'Выбор подхода',
+      content,
+      buttons: {},
+      render: (html: JQuery) => {
+        html.find('button[data-value]').on('click', (ev) => {
+          resolve((ev.currentTarget as HTMLButtonElement).dataset
+            .value as Approach);
+          dlg.close();
+        });
+      },
+      close: () => resolve(null),
+    });
+
+    dlg.render(true);
+  });
+}
+
+/* -------------------------------------------------
+ *  Добавление навыка
  * ------------------------------------------------*/
 async function addSkill() {
-  const name = await TextEditor.prompt(
-    'Название нового навыка',
-    { default: '' },
-  );
+  const name = await simplePrompt('Название нового навыка');
   if (!name) return;
 
-  const description = await TextEditor.prompt(
-    `Описание «${name}»`,
-    { default: '' },
-  );
+  const description =
+    (await simplePrompt(`Описание «${name}»`)) ?? '';
 
   const source: foundry.data.ItemSource<'skill', SkillDataModel['_source']> = {
     _id: foundry.utils.randomID(),
@@ -39,7 +100,7 @@ async function addSkill() {
     type: 'skill',
     img: 'icons/svg/book.svg',
     system: {
-      description: description ?? '',
+      description,
       source: '',
       category: 'general',
       initiative: false,
@@ -57,12 +118,11 @@ async function addSkill() {
     ctx.data.actor,
   ).createEmbeddedDocuments('Item', [source])) as GenesysItem<SkillDataModel>[];
 
-  // сразу открываем окно редактирования
   created.sheet?.render(true);
 }
 
 /* -------------------------------------------------
- *  Удаление навыка (красивый диалог)
+ *  Удаление
  * ------------------------------------------------*/
 async function deleteSkill(skill: GenesysItem<SkillDataModel>) {
   new Dialog({
@@ -72,7 +132,7 @@ async function deleteSkill(skill: GenesysItem<SkillDataModel>) {
       yes: {
         icon: '<i class="fas fa-trash"></i>',
         label: 'Удалить',
-        callback: async () => await skill.delete(),
+        callback: () => skill.delete(),
       },
       no: {
         icon: '<i class="fas fa-times"></i>',
@@ -84,37 +144,21 @@ async function deleteSkill(skill: GenesysItem<SkillDataModel>) {
 }
 
 /* -------------------------------------------------
- *  Изменение ранга (0–5)
+ *  Ранг (0-5)
  * ------------------------------------------------*/
-async function changeRank(skill: GenesysItem<SkillDataModel>, d: number) {
-  const next = Math.min(5, Math.max(0, skill.systemData.rank + d));
-  await skill.update({ 'system.rank': next });
+function changeRank(skill: GenesysItem<SkillDataModel>, delta: 1 | -1) {
+  const next = Math.min(5, Math.max(0, skill.systemData.rank + delta));
+  skill.update({ 'system.rank': next });
 }
 
 /* -------------------------------------------------
- *  «Бросок» — просто сообщение в чат
+ *  «Бросок» — сообщение в чат
  * ------------------------------------------------*/
 async function rollSkill(skill: GenesysItem<SkillDataModel>) {
-  const approach = await Dialog.prompt({
-    title: 'Выбор подхода',
-    content:
-      `<p>Через какой подход совершается бросок <strong>${skill.name}</strong>?</p>
-       <div style="display:flex; gap:0.5rem">
-         <button type="button" data-value="push">Нажим</button>
-         <button type="button" data-value="maneuver">Манёвр</button>
-         <button type="button" data-value="focus">Фокус</button>
-       </div>`,
-    rejectClose: true,
-    callback: (html) =>
-      (html.find('button[data-value]') as JQuery)
-        .on('click', (ev) =>
-          Dialog.resolve((ev.currentTarget as HTMLButtonElement).dataset.value),
-        ),
-  });
-
+  const approach = await promptApproach(skill.name);
   if (!approach) return;
 
-  const humanReadable: Record<string, string> = {
+  const human: Record<Approach, string> = {
     push: 'Нажим',
     maneuver: 'Манёвр',
     focus: 'Фокус',
@@ -123,16 +167,14 @@ async function rollSkill(skill: GenesysItem<SkillDataModel>) {
   ChatMessage.create({
     speaker: { actor: ctx.data.actor.id },
     content: `<strong>${ctx.data.actor.name}</strong> совершает бросок
-              <em>${skill.name}</em> через подход <strong>${humanReadable[approach]}</strong>.`,
+              <em>${skill.name}</em> через подход <strong>${human[approach]}</strong>.`,
   });
 }
 
 /* -------------------------------------------------
- *  Открытие листа навыка
+ *  Открыть лист навыка
  * ------------------------------------------------*/
-function openSkill(skill: GenesysItem<SkillDataModel>) {
-  skill.sheet?.render(true);
-}
+const openSkill = (s: GenesysItem<SkillDataModel>) => s.sheet?.render(true);
 </script>
 
 <template>
@@ -144,8 +186,11 @@ function openSkill(skill: GenesysItem<SkillDataModel>) {
     <table class="skills-table">
       <tbody>
         <tr v-for="skill in skills" :key="skill.id">
-          <!-- имя + описание в title -->
-          <td class="skill-name" :title="skill.systemData.description">
+          <!-- имя -->
+          <td
+            class="skill-name"
+            :title="skill.systemData.description || '—'"
+          >
             <a @click="openSkill(skill)">{{ skill.name }}</a>
           </td>
 
@@ -158,7 +203,7 @@ function openSkill(skill: GenesysItem<SkillDataModel>) {
 
           <!-- действия -->
           <td class="actions">
-            <button @click="rollSkill(skill)" title="Бросить">🎲</button>
+            <button @click="rollSkill(skill)" title="Бросок">🎲</button>
             <button @click="openSkill(skill)" title="Редактировать">✏️</button>
             <button @click="deleteSkill(skill)" title="Удалить">🗑️</button>
           </td>
