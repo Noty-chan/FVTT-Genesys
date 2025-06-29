@@ -79,9 +79,9 @@ onBeforeUpdate(updateEffects);
                 </section>
 
                 <section class="resources">
-                        <ResourceDots label="Genesys.Labels.Contacts" :value="system.contacts" icon="fas fa-user-friends" />
-                        <ResourceDots label="Genesys.Labels.Intel" :value="system.intel" icon="fas fa-lightbulb" />
-                        <ResourceDots label="Genesys.Labels.Will" :value="system.will" icon="fas fa-bolt" />
+                        <ResourceDots label="Genesys.Labels.Contacts" :value="system.contacts" name="system.contacts" icon="fas fa-user-friends" />
+                        <ResourceDots label="Genesys.Labels.Intel" :value="system.intel" name="system.intel" icon="fas fa-lightbulb" />
+                        <ResourceDots label="Genesys.Labels.Will" :value="system.will" name="system.will" icon="fas fa-bolt" />
                 </section>
 
 		<nav class="sheet-tabs" data-group="primary">
