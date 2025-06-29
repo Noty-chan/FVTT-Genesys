@@ -141,7 +141,9 @@ async function rollSkillForActor(actor: GenesysActor, skill: GenesysItem<SkillDa
                 if (!approach) {
                         return;
                 }
-                await DicePrompt.promptForRoll(actor, skill.name, { rollUnskilled: approach });
+                await DicePrompt.promptForRoll(actor, skill.name, {
+                        rollUnskilled: approach as Approach,
+                });
         }
 }
 
