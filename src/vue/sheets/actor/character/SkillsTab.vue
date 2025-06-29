@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import { computed, inject, toRaw } from 'vue';
+import $ from 'jquery';
 import { ActorSheetContext, RootContext } from '@/vue/SheetContext';
 import CharacterDataModel from '@/actor/data/CharacterDataModel';
 import GenesysItem from '@/item/GenesysItem';
 import SkillDataModel from '@/item/data/SkillDataModel';
-import $ from 'jquery';
-	
+
 /* -------------------------------------------------
  *  Контекст листа
  * ------------------------------------------------*/
@@ -36,7 +36,7 @@ function simplePrompt(
       buttons: {
         ok: {
           label: 'OK',
-          callback: (html: JQuery) =>
+          callback: (html: JQuery<HTMLElement>) =>
             resolve(
               (html.find('input[name="value"]').val() as string)?.trim() || null,
             ),
@@ -53,7 +53,7 @@ function simplePrompt(
 }
 
 /* -------------------------------------------------
- *  Выбор подхода
+ *  Выбор подхода (Dialog)
  * ------------------------------------------------*/
 type Approach = 'push' | 'maneuver' | 'focus';
 
@@ -71,11 +71,8 @@ function promptApproach(skillName: string): Promise<Approach | null> {
       title: 'Выбор подхода',
       content,
       buttons: {},
-      render: (html: HTMLElement | JQuery<HTMLElement>) => {
-        // превращаем в jQuery-объект, чтобы спокойно пользоваться .find()
-        const $html = html instanceof $ ? html : $(html);
-
-        $html.find('button[data-value]').on(
+      render: (html: JQuery<HTMLElement>) => {
+        html.find('button[data-value]').on(
           'click',
           (ev: JQuery.ClickEvent<HTMLButtonElement>) => {
             resolve(
