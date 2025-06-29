@@ -53,15 +53,6 @@ onBeforeUpdate(updateEffects);
                                 :secondary-value="system.wounds.value"
                         />
 
-                        <CombatStat
-                                label="Genesys.Labels.Strain"
-                                primary-label="Genesys.Labels.Threshold"
-                                :value="system.strain.max"
-                                has-secondary
-                                secondary-label="Genesys.Labels.Current"
-                                secondary-name="system.strain.value"
-                                :secondary-value="system.strain.value"
-                        />
 
                         <CombatStat :label="system.resourceName" :value="system.resource" />
 
@@ -131,7 +122,7 @@ onBeforeUpdate(updateEffects);
 	gap: 0.5em;
 }
 
-// Container for the character's secondary combat stats (wounds, strain, etc.)
+// Container for the character's secondary combat stats (wounds, resource, etc.)
 .combat-stat-row {
 	// By default, evenly space the items across the full sheet width.
 	display: flex;

@@ -246,8 +246,7 @@ export default class CharacterSheet extends VueSheet(GenesysActorSheet<Character
 			'system.characteristics.willpower': workingData.characteristics.willpower,
 			'system.characteristics.presence': workingData.characteristics.presence,
 
-			'system.wounds.max': workingData.wounds.max,
-			'system.strain.max': workingData.strain.max,
+                        'system.wounds.max': workingData.wounds.max,
 
 			'system.experienceJournal.entries': workingData.experienceJournal.entries,
 		});
@@ -273,9 +272,8 @@ export default class CharacterSheet extends VueSheet(GenesysActorSheet<Character
 		workingData.characteristics.willpower += archetypeData.characteristics.willpower;
 		workingData.characteristics.presence += archetypeData.characteristics.presence;
 
-		// Wound & Strain Thresholds
-		workingData.wounds.max += archetypeData.woundThreshold + archetypeData.characteristics.brawn;
-		workingData.strain.max += archetypeData.strainThreshold + archetypeData.characteristics.willpower;
+                // Wound Threshold
+                workingData.wounds.max += archetypeData.woundThreshold + archetypeData.characteristics.brawn;
 
 		// Granted Items
 		const items = archetypeData.grantedItems;
@@ -326,9 +324,8 @@ export default class CharacterSheet extends VueSheet(GenesysActorSheet<Character
 		workingData.characteristics.willpower -= archetypeData.characteristics.willpower;
 		workingData.characteristics.presence -= archetypeData.characteristics.presence;
 
-		// Wound & Strain Thresholds
-		workingData.wounds.max -= archetypeData.woundThreshold + archetypeData.characteristics.brawn;
-		workingData.strain.max -= archetypeData.strainThreshold + archetypeData.characteristics.willpower;
+                // Wound Threshold
+                workingData.wounds.max -= archetypeData.woundThreshold + archetypeData.characteristics.brawn;
 
 		// Remove starting XP from Experience Journal.
 		workingData.experienceJournal.entries = workingData.experienceJournal.entries.slice(1);
