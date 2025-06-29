@@ -4,6 +4,7 @@ import { ActorSheetContext, RootContext } from '@/vue/SheetContext';
 import CharacterDataModel from '@/actor/data/CharacterDataModel';
 import CharacterMeta from '@/vue/sheets/actor/character/CharacterMeta.vue';
 import CombatStat from '@/vue/components/character/CombatStat.vue';
+import ResourceDots from '@/vue/components/character/ResourceDots.vue';
 import Localized from '@/vue/components/Localized.vue';
 import EffectsView from '@/vue/views/EffectsView.vue';
 
@@ -64,6 +65,8 @@ onBeforeUpdate(updateEffects);
 
                         <CombatStat :label="system.resourceName" :value="system.resource" />
 
+                        <CombatStat label="XP" :value="system.xp" editable />
+
                         <CombatStat
                                 label="Genesys.Labels.Defense"
                                 primary-label="Genesys.Labels.DefenseRanged"
@@ -85,6 +88,13 @@ onBeforeUpdate(updateEffects);
                                 :value="system.totalMagicDefense"
                                 read-only
                         />
+                </section>
+
+                <section class="resources">
+                        <ResourceDots label="Genesys.Labels.Contacts" :value="system.contacts" icon="fas fa-user-friends" />
+                        <ResourceDots label="Genesys.Labels.Intel" :value="system.intel" icon="fas fa-lightbulb" />
+                        <ResourceDots label="Genesys.Labels.Will" :value="system.will" icon="fas fa-bolt" />
+
                 </section>
 
 		<nav class="sheet-tabs" data-group="primary">
@@ -149,7 +159,12 @@ onBeforeUpdate(updateEffects);
 
 		.combat-stat {
 			width: 165px;
-		}
-	}
+        }
+}
+
+.resources {
+        display: flex;
+        justify-content: center;
+        gap: 1em;
 }
 </style>

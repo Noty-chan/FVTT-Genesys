@@ -262,21 +262,21 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
                 });
         }
 
-        async spendXP(amount: number, target?: string, note?: string) {
-                if (this.xp < amount) {
-                        return false;
-                }
+       async spendXP(amount: number, target?: string, note?: string) {
+               if (this.xp < amount) {
+                       throw new Error('Not enough XP');
+               }
 
-                await (this.parent as unknown as Actor).update({
-                        'system.xp': this.xp - amount,
-                        'system.xpHistory': [
-                                ...this.xpHistory,
-                                { amount: -amount, target, note },
-                        ],
-                });
+               await (this.parent as unknown as Actor).update({
+                       'system.xp': this.xp - amount,
+                       'system.xpHistory': [
+                               ...this.xpHistory,
+                               { amount: -amount, target, note },
+                       ],
+               });
 
-                return true;
-        }
+               return true;
+       }
 
        async gainContacts(amount: number, note?: string) {
                await (this.parent as unknown as Actor).update({
@@ -387,18 +387,13 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 		);
 	}
 
-        get canPurchaseCharacteristicAdvance(): { brawn: boolean; agility: boolean; intellect: boolean; cunning: boolean; willpower: boolean; presence: boolean } {
-                const availableXP = this.xp;
+       get canPurchaseCharacteristicAdvance(): boolean {
+               const { push, maneuver, focus } = this.approaches;
+               const max = Math.max(push, maneuver, focus);
+               const min = Math.min(push, maneuver, focus);
 
-                return {
-                        brawn: this.characteristics.brawn < 5 && availableXP >= (this.characteristics.brawn + 1) * 10,
-                        agility: this.characteristics.agility < 5 && availableXP >= (this.characteristics.agility + 1) * 10,
-                        intellect: this.characteristics.intellect < 5 && availableXP >= (this.characteristics.intellect + 1) * 10,
-                        cunning: this.characteristics.cunning < 5 && availableXP >= (this.characteristics.cunning + 1) * 10,
-                        willpower: this.characteristics.willpower < 5 && availableXP >= (this.characteristics.willpower + 1) * 10,
-                        presence: this.characteristics.presence < 5 && availableXP >= (this.characteristics.presence + 1) * 10,
-                };
-        }
+               return max - min <= 1 && this.xp >= 1;
+       }
 
 	#additionalEncumbranceThreshold() {
 		return (<CharacterActor>(<unknown>this.parent)).items
