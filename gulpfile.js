@@ -19,6 +19,7 @@ export function zip() {
 	return src('dist/**/*')
 		.pipe(gulpZip(`system.zip`))
 		.pipe(dest('.'));
+
 }
 
 export function clean() {
