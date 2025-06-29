@@ -1,211 +1,127 @@
 <script lang="ts" setup>
-/**
- * Упрощённая вкладка «Навыки».
- *  – «Добавить навык» показывает диалог со списком навыков из CONFIG.genesys.skills
- *    плюс вариант «Пользовательский».
- *  – При выборе из списка создаётся копия шаблона (с описанием!).
- *  – Название навыка в таблице содержит title-подсказку с его описанием.
- */
-
 import { computed, inject, toRaw } from 'vue';
-
-import CharacterDataModel from '@/actor/data/CharacterDataModel';
 import { ActorSheetContext, RootContext } from '@/vue/SheetContext';
-import CharacterSheet from '@/actor/sheets/CharacterSheet';
-import Characteristic from '@/vue/components/character/Characteristic.vue';
-import SkillDataModel from '@/item/data/SkillDataModel';
-import Localized from '@/vue/components/Localized.vue';
+import CharacterDataModel from '@/actor/data/CharacterDataModel';
 import GenesysItem from '@/item/GenesysItem';
-import XPContainer from '@/vue/components/character/XPContainer.vue';
-import GenesysRoller from '@/dice/GenesysRoller';
-import ContextMenu from '@/vue/components/ContextMenu.vue';
-import MenuItem from '@/vue/components/MenuItem.vue';
-import MasonryWall from '@yeger/vue-masonry-wall';
-import { Approach } from '@/data/Approaches';
+import SkillDataModel from '@/item/data/SkillDataModel';
 
-const ctx = inject<ActorSheetContext<CharacterDataModel, CharacterSheet>>(RootContext)!;
+const ctx = inject<ActorSheetContext<CharacterDataModel>>(RootContext)!;
 const system = computed(() => ctx.data.actor.systemData);
 
-const addSkillLabel = game.i18n.localize('Genesys.Labels.AddSkill'); // ← исправлено
+// Список навыков у персонажа (без лишних)
+const skills = computed(() =>
+	toRaw(ctx.data.actor).items.filter((i) => i.type === 'skill') as GenesysItem<SkillDataModel>[],
+);
 
-/* -------------------- список навыков -------------------- */
-
-const skills = computed(() => {
-	const owned = new Map(
-		toRaw(ctx.data.actor).items
-			.filter((i) => i.type === 'skill')
-			.map((i) => [i.name, i as GenesysItem<SkillDataModel>]),
-	);
-	return CONFIG.genesys.skills.map(
-		(s: GenesysItem<SkillDataModel>) => owned.get(s.name) ?? s,
-	);
-});
-
-/* -------------------- добавление навыка -------------------- */
-
+// Добавление нового навыка
 async function addSkill() {
-	const choices: Record<string, string> = {
-		blank: game.i18n.localize('Genesys.Labels.CustomSkill'),
+	const skillName = prompt('Название нового навыка:');
+	if (!skillName) return;
+
+	const skillDesc = prompt('Описание навыка:', '');
+
+	const source: foundry.data.ItemSource<'skill', SkillDataModel['_source']> = {
+		_id: foundry.utils.randomID(),
+		name: skillName,
+		type: 'skill',
+		img: 'icons/svg/book.svg',
+		system: {
+			description: skillDesc || '',
+			source: '',
+			category: 'general',
+			initiative: false,
+			career: false,
+			rank: 0,
+		},
+		effects: [],
+		ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER },
+		sort: 0,
+		folder: null,
+		flags: {},
 	};
-	for (const s of CONFIG.genesys.skills) {
-		choices[s.id ?? s.name] = s.name;
-	}
 
-	// Foundry V10: Dialog.prompt; типы у него «любые», поэтому as any
-	const picked: string | null = await (Dialog as any).prompt({
-		title: game.i18n.localize('Genesys.Labels.AddSkill'),
-		label: game.i18n.localize('Genesys.UI.Add'),
-		choices,
-	});
-
-	if (picked === null) return; // отмена
-
-	let source: foundry.data.ItemSource<'skill', SkillDataModel['_source']>;
-
-	if (picked === 'blank') {
-		source = {
-			_id: foundry.utils.randomID(),
-			name: game.i18n.localize('Genesys.Labels.NewSkill'),
-			type: 'skill',
-			img: 'icons/svg/book.svg',
-			system: {
-				description: '',
-				source: '',
-				category: 'general',
-				initiative: false,
-				career: false,
-				rank: 0,
-			},
-			effects: [],
-			ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER },
-			sort: 0,
-			folder: null,
-			flags: {},
-		};
-	} else {
-		const tpl = CONFIG.genesys.skills.find(
-			(s: GenesysItem<SkillDataModel>) => (s.id ?? s.name) === picked,
-		)!;
-		source = { ...(tpl.toObject() as any), _id: foundry.utils.randomID() };
-	}
-
-	const skill = await (toRaw(ctx.sheet) as any).createSkill(
-		source as any,
-	) as GenesysItem<SkillDataModel>;
-	await skill?.sheet?.render(true);
+	await toRaw(ctx.data.actor).createEmbeddedDocuments('Item', [source]);
 }
 
-/* -------------------- бросок -------------------- */
+// Удаление навыка
+async function deleteSkill(skill: GenesysItem<SkillDataModel>) {
+	if (confirm(`Удалить навык "${skill.name}"?`)) await skill.delete();
+}
 
+// Изменение ранга навыка
+async function changeRank(skill: GenesysItem<SkillDataModel>, delta: number) {
+	const newRank = Math.clamped(skill.systemData.rank + delta, 0, 5);
+	await skill.update({ 'system.rank': newRank });
+}
+
+// Бросок через подход
 async function rollSkill(skill: GenesysItem<SkillDataModel>) {
-	const approach: Approach | null = await (Dialog as any).prompt({
-		title: game.i18n.localize('Genesys.ApproachPrompt.Hint'),
-		label: 'OK',
-		choices: {
-			push: game.i18n.localize('Genesys.Approach.Push'),
-			maneuver: game.i18n.localize('Genesys.Approach.Maneuver'),
-			focus: game.i18n.localize('Genesys.Approach.Focus'),
-		},
-	});
-	if (!approach) return;
+	const approaches = { push: 'Нажим', maneuver: 'Манёвр', focus: 'Фокус' };
+	const approach = prompt('Введите подход (push, maneuver, focus):', 'push');
 
-	await GenesysRoller.skillRoll({
-		actor: toRaw(ctx.data.actor),
-		approach: approach as Approach,
-		usesSuperCharacteristic: false,
-		skillId: skill.id,
-		formula: '',
-		symbols: {},
+	if (!approach || !approaches[approach]) return;
+
+	ChatMessage.create({
+		content: `<strong>${ctx.data.actor.name}</strong> делает бросок <strong>${skill.name}</strong> через подход <strong>${approaches[approach]}</strong>.`,
+		speaker: { actor: ctx.data.actor.id },
 	});
 }
 </script>
 
 <template>
-	<section class="tab-skills">
-		<!-- характеристики-подходы -->
-		<div class="approaches-row">
-			<Characteristic label="Genesys.Approach.Push" :value="system.approaches.push" name="system.approaches.push" can-edit />
-			<Characteristic label="Genesys.Approach.Maneuver" :value="system.approaches.maneuver" name="system.approaches.maneuver" can-edit />
-			<Characteristic label="Genesys.Approach.Focus" :value="system.approaches.focus" name="system.approaches.focus" can-edit />
-		</div>
+	<div class="skills-tab">
+		<button class="add-skill" @click="addSkill">➕ Добавить навык</button>
 
-		<!-- список навыков -->
-		<div class="skills-row">
-			<div class="add-skill">
-				<a @click="addSkill"><i class="fas fa-plus"></i> {{ addSkillLabel }}</a>
-			</div>
-
-			<MasonryWall :column-width="300" :items="[1]" :gap="8">
-				<!-- один столбец – чтобы работал masonry-layout -->
-				<div class="skill-category">
-					<div class="body">
-						<ContextMenu
-							v-for="sk in skills"
-							:key="sk.id"
-							class="row skill"
-						>
-							<img :src="sk.img" :alt="sk.name" />
-							<a
-								class="name"
-								@click="rollSkill(sk)"
-								:title="sk.systemData.description"
-							>
-								{{ sk.name }}
-							</a>
-							<span class="rank-display">{{ sk.systemData.rank }}</span>
-						</ContextMenu>
-					</div>
-				</div>
-			</MasonryWall>
-		</div>
-
-		<!-- опыт -->
-		<section class="experience">
-			<XPContainer label="Genesys.Labels.TotalXP" :value="system.totalXP" />
-			<XPContainer label="Genesys.Labels.AvailableXP" :value="system.availableXP" />
-		</section>
-	</section>
+		<table class="skills-table">
+			<tr v-for="skill in skills" :key="skill.id">
+				<td class="skill-name">
+					<strong>{{ skill.name }}</strong><br>
+					<small>{{ skill.systemData.description }}</small>
+				</td>
+				<td class="skill-controls">
+					<button @click="changeRank(skill, -1)">➖</button>
+					<span>{{ skill.systemData.rank }}</span>
+					<button @click="changeRank(skill, 1)">➕</button>
+				</td>
+				<td class="skill-actions">
+					<button @click="rollSkill(skill)">🎲</button>
+					<button @click="deleteSkill(skill)">🗑️</button>
+				</td>
+			</tr>
+		</table>
+	</div>
 </template>
 
-<style lang="scss" scoped>
-@use '@scss/vars/colors.scss';
-
-.tab-skills {
-	display: grid;
-	grid-template-rows: auto auto auto 1fr;
-	grid-template-columns: 1fr auto 1fr;
-	gap: 0.5em;
+<style scoped>
+.skills-tab {
+	padding: 10px;
 }
 
-.approaches-row {
-	grid-column: 2 / span 1;
-	display: flex;
-	justify-content: center;
-	gap: 3em;
+.skills-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 10px;
 }
 
-.skills-row {
-	grid-column: 1 / span all;
-	padding: 0 0.5em;
+.skills-table td {
+	padding: 5px;
+	border: 1px solid #ddd;
+	vertical-align: middle;
+}
 
-	.add-skill {
-		text-align: right;
-		margin-bottom: 0.25rem;
-	}
+.skill-controls, .skill-actions {
+	width: 120px;
+	text-align: center;
+}
 
-	.skill-category .row {
-		display: grid;
-		grid-template-columns: 1.5rem 1fr auto;
-		align-items: center;
-		gap: 0.25rem;
+.skill-controls button, .skill-actions button {
+	margin: 0 2px;
+	cursor: pointer;
+}
 
-		.rank-display {
-			text-align: center;
-			min-width: 1.5rem;
-			border: 1px dashed black;
-			border-radius: 0.75rem;
-			background: colors.$light-blue;
-		}
-	}
+.add-skill {
+	cursor: pointer;
+	padding: 5px 10px;
+	font-size: 14px;
 }
 </style>
