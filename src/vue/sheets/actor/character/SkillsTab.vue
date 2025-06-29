@@ -12,9 +12,6 @@ import Localized from '@/vue/components/Localized.vue';
 const context = inject<ActorSheetContext<CharacterDataModel>>(RootContext)!;
 const system = computed(() => context.data.actor.systemData);
 
-/* ------------------------------------------------------------------ *
- *  helpers                                                           *
- * ------------------------------------------------------------------ */
 const ownedSkills = computed(
   () =>
     [...toRaw(context.data.actor).items]
@@ -54,7 +51,10 @@ async function addSkill() {
 
   const src: foundry.data.ItemSource<'skill', SkillDataModel['_source']> =
     template
-      ? duplicate(template.toObject())
+      ? (duplicate(template.toObject()) as foundry.data.ItemSource<
+          'skill',
+          SkillDataModel['_source']
+        >)
       : {
           _id: foundry.utils.randomID(),
           name: 'New Skill',
