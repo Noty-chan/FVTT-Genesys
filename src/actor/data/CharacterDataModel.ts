@@ -75,7 +75,6 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 	abstract soak: number;
 	abstract defense: Defense;
 	abstract wounds: CombatPool;
-	abstract strain: CombatPool;
 	abstract illustration: string;
 	abstract motivations: Motivations;
 	abstract details: Details;
@@ -88,7 +87,13 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
        abstract intel: number;
        abstract will: number;
        abstract xp: number;
-       abstract xpHistory: { amount: number; note?: string; target?: string }[];
+       abstract xpHistory: {
+               amount: number;
+               type: string;
+               target?: string;
+               description?: string;
+               timestamp: number;
+       }[];
        abstract resourceHistory: { resource: string; amount: number; note?: string }[];
        abstract abilities: NarrativeAbility[];
        abstract notes: string;
@@ -124,13 +129,6 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 			valuePath: 'wounds.value',
 			maxPath: 'wounds.max',
 		},
-                strain: {
-                        label: 'Strain',
-                        isBar: true,
-                        editable: true,
-                        valuePath: 'strain.value',
-                        maxPath: 'strain.max',
-                },
                 resource: {
                         label: 'Resource',
                         isBar: false,
@@ -242,17 +240,23 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
                 });
         }
 
-        async gainXP(amount: number, note?: string) {
+        async gainXP(amount = 1, note = 'Session reward') {
                 await (this.parent as unknown as Actor).update({
                         'system.xp': this.xp + amount,
                         'system.xpHistory': [
                                 ...this.xpHistory,
-                                { amount, note },
+                                {
+                                        amount,
+                                        type: 'Gain',
+                                        target: '',
+                                        description: note,
+                                        timestamp: Date.now(),
+                                },
                         ],
                 });
         }
 
-       async spendXP(amount: number, target?: string, note?: string) {
+       async spendXP(amount = 1, target: string, note = '') {
                if (this.xp < amount) {
                        throw new Error('Not enough XP');
                }
@@ -261,11 +265,15 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
                        'system.xp': this.xp - amount,
                        'system.xpHistory': [
                                ...this.xpHistory,
-                               { amount: -amount, target, note },
+                               {
+                                       amount: -amount,
+                                       type: 'Spend',
+                                       target,
+                                       description: note,
+                                       timestamp: Date.now(),
+                               },
                        ],
                });
-
-               return true;
        }
 
        async gainContacts(amount: number, note?: string) {
@@ -466,12 +474,12 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 
 	async preCreate(actor: CharacterActor, _data: PreDocumentId<any>, _options: DocumentModificationContext<CharacterActor>, _user: User) {
 		// Player character tokens should default to being Friendly.
-		const prototypeToken = {
-			bar1: { attribute: 'wounds' },
-			bar2: { attribute: 'strain' },
-			disposition: CONST.TOKEN_DISPOSITIONS.FRIENDLY,
-			actorLink: true,
-		};
+                const prototypeToken = {
+                        bar1: { attribute: 'wounds' },
+                        bar2: { attribute: 'resource' },
+                        disposition: CONST.TOKEN_DISPOSITIONS.FRIENDLY,
+                        actorLink: true,
+                };
 		await actor.updateSource({ prototypeToken });
 
 		// Already have skills data, so we have no reason to add new ones.
@@ -513,10 +521,6 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 				ranged: new fields.NumberField({ integer: true, initial: 0 }),
 			}),
 			wounds: new fields.SchemaField({
-				value: new fields.NumberField({ integer: true, initial: 0 }),
-				max: new fields.NumberField({ integer: true, initial: 0 }),
-			}),
-			strain: new fields.SchemaField({
 				value: new fields.NumberField({ integer: true, initial: 0 }),
 				max: new fields.NumberField({ integer: true, initial: 0 }),
 			}),
@@ -571,9 +575,11 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
                        xp: new fields.NumberField({ integer: true, initial: 0 }),
                        xpHistory: new fields.ArrayField(
                                new fields.SchemaField({
-                                       amount: new fields.NumberField({ integer: true, initial: 0 }),
-                                       note: new fields.StringField(),
+                                       amount: new fields.NumberField({ integer: true, required: true }),
+                                       type: new fields.StringField({ required: true }),
                                        target: new fields.StringField(),
+                                       description: new fields.StringField(),
+                                       timestamp: new fields.NumberField({ integer: true, initial: () => Date.now() }),
                                }),
                        ),
                        resourceHistory: new fields.ArrayField(
