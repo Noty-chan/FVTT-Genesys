@@ -67,23 +67,21 @@ function promptApproach(skillName: string): Promise<Approach | null> {
         <button type="button" data-value="focus">Фокус</button>
       </div>`;
 
-    const dlg = new Dialog({
-      title: 'Выбор подхода',
-      content,
-      buttons: {},
-      render: (html: JQuery<HTMLElement>) => {
-        html.find('button[data-value]').on(
-          'click',
-          (ev: JQuery.ClickEvent<HTMLButtonElement>) => {
-            resolve(
-              (ev.currentTarget.dataset.value as Approach) ?? null,
-            );
+      const dlg = new Dialog({
+        title: 'Выбор подхода',
+        content,
+        buttons: {},
+        render: (html: HTMLElement | JQuery<HTMLElement>) => {
+          const jhtml = html instanceof HTMLElement ? $(html) : html;
+          jhtml.find('button[data-value]').on('click', (ev) => {
+            const value = (ev.currentTarget as HTMLButtonElement).dataset
+              .value as Approach | undefined;
+            resolve(value ?? null);
             dlg.close();
-          },
-        );
-      },
-      close: () => resolve(null),
-    });
+          });
+        },
+        close: () => resolve(null),
+      });
 
     dlg.render(true);
   });
