@@ -203,9 +203,9 @@ async function deleteField(index: number) {
                 </section>
 
                 <section class="resources">
-                        <ResourceDots label="Genesys.Labels.Contacts" :value="system.contacts" icon="fas fa-user-friends" />
-                        <ResourceDots label="Genesys.Labels.Intel" :value="system.intel" icon="fas fa-lightbulb" />
-                        <ResourceDots label="Genesys.Labels.Will" :value="system.will" icon="fas fa-bolt" />
+                        <ResourceDots label="Genesys.Labels.Contacts" name="system.contacts" :value="system.contacts" icon="fas fa-user-friends" />
+                        <ResourceDots label="Genesys.Labels.Intel" name="system.intel" :value="system.intel" icon="fas fa-lightbulb" />
+                        <ResourceDots label="Genesys.Labels.Will" name="system.will" :value="system.will" icon="fas fa-bolt" />
                 </section>
         </section>
 </template>
