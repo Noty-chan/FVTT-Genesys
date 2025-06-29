@@ -402,12 +402,12 @@ Genesys:
     Career: Карьера
     Soak: Защита
     SoakValue: Значение защиты
-    Wounds: Раны
+    Wounds: Здоровье
     WoundThreshold: Предел ран
     Strain: Стресс
     StrainThreshold: Предел стресса
     Defense: Защита
-    Threshold: Предел
+    Threshold: Максимум
     Current: Текущее
     DefenseMelee: Ближний бой
     MeleeDefense: Защита в ближнем бою

@@ -41,33 +41,33 @@ onBeforeUpdate(updateEffects);
 	<div class="character-sheet">
 		<CharacterMeta />
 
-		<section class="combat-stat-row">
-			<CombatStat label="Genesys.Labels.SoakValue" :value="system.totalSoak" />
+                <section class="combat-stat-row">
+                        <CombatStat
+                                label="Genesys.Labels.Wounds"
+                                primary-label="Genesys.Labels.Threshold"
+                                :value="system.wounds.max"
+                                has-secondary
+                                secondary-label="Genesys.Labels.Current"
+                                secondary-name="system.wounds.value"
+                                :secondary-value="system.wounds.value"
+                        />
 
-			<CombatStat
-				label="Genesys.Labels.Wounds"
-				primary-label="Genesys.Labels.Threshold"
-				:value="system.wounds.max"
-				has-secondary
-				secondary-label="Genesys.Labels.Current"
-				secondary-name="system.wounds.value"
-				:secondary-value="system.wounds.value"
-			/>
+                        <CombatStat
+                                label="Genesys.Labels.Strain"
+                                primary-label="Genesys.Labels.Threshold"
+                                :value="system.strain.max"
+                                has-secondary
+                                secondary-label="Genesys.Labels.Current"
+                                secondary-name="system.strain.value"
+                                :secondary-value="system.strain.value"
+                        />
 
-			<CombatStat
-				label="Genesys.Labels.Strain"
-				primary-label="Genesys.Labels.Threshold"
-				:value="system.strain.max"
-				has-secondary
-				secondary-label="Genesys.Labels.Current"
-				secondary-name="system.strain.value"
-				:secondary-value="system.strain.value"
-			/>
+                        <CombatStat :label="system.resourceName" :value="system.resource" />
 
-			<CombatStat
-				label="Genesys.Labels.Defense"
-				primary-label="Genesys.Labels.DefenseRanged"
-				:value="system.totalDefense.ranged"
+                        <CombatStat
+                                label="Genesys.Labels.Defense"
+                                primary-label="Genesys.Labels.DefenseRanged"
+                                :value="system.totalDefense.ranged"
 				has-secondary
 				secondary-label="Genesys.Labels.DefenseMelee"
 				:secondary-value="system.totalDefense.melee"
