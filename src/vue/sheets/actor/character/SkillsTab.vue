@@ -9,6 +9,15 @@ import GenesysItem from '@/item/GenesysItem';
 import ApproachPrompt from '@/app/ApproachPrompt';
 import GenesysRoller from '@/dice/GenesysRoller';
 
+/* 👇 ВЕРНУЛИ визуальные компоненты */
+import Characteristic from '@/vue/components/character/Characteristic.vue';
+import Localized from '@/vue/components/Localized.vue';
+import XPContainer from '@/vue/components/character/XPContainer.vue';
+import ContextMenu from '@/vue/components/ContextMenu.vue';
+import MenuItem from '@/vue/components/MenuItem.vue';
+import MasonryWall from '@yeger/vue-masonry-wall';
+/* ↑↑↑ */
+
 const context = inject<ActorSheetContext<CharacterDataModel, CharacterSheet>>(RootContext)!;
 const system  = computed(() => context.data.actor.systemData);
 
@@ -42,7 +51,6 @@ const customLabel   = game.i18n.localize('Genesys.Labels.CustomSkill');
 
 /* ---------- Добавление навыка ---------- */
 async function addSkill() {
-  /* навыки, которых ещё нет у актёра */
   const available = CONFIG.genesys.skills
     .filter((tpl) => !context.data.actor.items.find((i) => i.type === 'skill' && i.name === tpl.name));
 
@@ -54,7 +62,6 @@ async function addSkill() {
        + `<option value="__custom">-- ${customLabel} --</option>`
      + `</select></div></form>`;
 
-  /* Dialog.prompt типы могут отсутствовать – приводим к any */
   const chosen = await (Dialog as any).prompt({
     title  : addSkillLabel,
     content,
@@ -68,7 +75,6 @@ async function addSkill() {
   let source: foundry.data.ItemSource<'skill', SkillDataModel['_source']>;
 
   if (chosen === '__custom') {
-    /* пустой шаблон */
     source = {
       _id : foundry.utils.randomID(),
       name: customLabel,
@@ -89,16 +95,13 @@ async function addSkill() {
       flags    : {},
     };
   } else {
-    /* копия шаблона из компендиума */
     const tpl       = available.find((s) => s.id === chosen)!;
     const tplSource = duplicate(tpl.toObject()) as any;
     tplSource._id   = foundry.utils.randomID();
     tplSource.ownership ??= { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER };
-
-    source = tplSource as unknown as foundry.data.ItemSource<'skill', SkillDataModel['_source']>;
+    source = tplSource as foundry.data.ItemSource<'skill', SkillDataModel['_source']>;
   }
 
-  /* создаём Item и открываем лист */
   const skill = await (toRaw(context.sheet) as any).createSkill(source) as GenesysItem<SkillDataModel>;
   await skill?.sheet?.render(true);
 }
@@ -118,22 +121,18 @@ async function rollSkill(skill: GenesysItem<SkillDataModel>) {
   });
 }
 
-/* ---------- прочие утилиты, оставлены без изменений ---------- */
+/* ---------- прочие утилиты ---------- */
 async function purchaseSkillRank(skill: GenesysItem<SkillDataModel>) {
   if (skill.systemData.rank >= 5 || system.value.availableXP < 1) return;
-
   await toRaw(context.data.actor).systemData.spendXP(1, 'skill:' + skill.name);
   await toRaw(skill).update({ 'system.rank': skill.systemData.rank + 1 });
 }
-
 async function toggleCareerSkill(skill: GenesysItem<SkillDataModel>) {
   await toRaw(skill).update({ 'system.career': !skill.systemData.career });
 }
-
 async function freeSkillRank(skill: GenesysItem<SkillDataModel>, adj: number) {
   await toRaw(skill).update({ 'system.rank': Math.max(0, skill.systemData.rank + adj) });
 }
-
-async function editSkill(skill: GenesysItem<SkillDataModel>) { await toRaw(skill).sheet?.render(true); }
+async function editSkill(skill: GenesysItem<SkillDataModel>)  { await toRaw(skill).sheet?.render(true); }
 async function deleteSkill(skill: GenesysItem<SkillDataModel>) { await toRaw(skill).delete(); }
 </script>
