@@ -137,12 +137,11 @@ function sortNames([left]: [string, any], [right]: [string, any]) {
 
 async function rollSkillForActor(actor: GenesysActor, skill: GenesysItem<SkillDataModel>) {
         if (actor.isOwner) {
-                const approach = await ApproachPrompt.promptForApproach();
+                const approach: Approach | undefined = await ApproachPrompt.promptForApproach();
                 if (!approach) {
                         return;
                 }
-                const promptOptions: DicePromptOptions = { rollUnskilled: approach };
-                await DicePrompt.promptForRoll(actor, skill.name, promptOptions);
+                await DicePrompt.promptForRoll(actor, skill.name, { rollUnskilled: approach });
         }
 }
 

@@ -64,7 +64,7 @@ const addSkillLabel = game.i18n.localize('Genesys.Labels.AddSkill');
 
 async function addSkill() {
         const skill = await toRaw(context.sheet).createSkill(
-                { name: addSkillLabel, type: 'skill' } as foundry.data.ItemSource<
+                { name: addSkillLabel, type: 'skill' } as unknown as foundry.data.ItemSource<
                         'skill',
                         SkillDataModel['_source']
                 >,
