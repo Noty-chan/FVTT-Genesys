@@ -62,28 +62,35 @@ const deleteLabel = game.i18n.localize('Genesys.Labels.Delete');
 const addSkillLabel = game.i18n.localize('Genesys.Labels.AddSkill');
 
 async function addSkill() {
-        const stubSkill: foundry.data.ItemSource<'skill', SkillDataModel['_source']> = {
-                _id: foundry.utils.randomID(),
-                name: addSkillLabel,
-                type: 'skill',
-                img: 'icons/svg/book.svg',
-                system: {
-                        description: '',
-                        source: '',
-                        category: 'general',
-                        initiative: false,
-                        career: false,
-                        rank: 0,
-                },
-                effects: [],
-                ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER },
-                sort: 0,
-                folder: null,
-                flags: {},
-        };
-        const skill = await toRaw(context.sheet).createSkill(stubSkill);
-        await skill?.sheet?.render(true);
+    const stubSkill: foundry.data.ItemSource<'skill', SkillDataModel['_source']> = {
+        _id: foundry.utils.randomID(),
+        name: addSkillLabel,
+        type: 'skill',
+        img: 'icons/svg/book.svg',
+
+        system: {
+            description: '',
+            source: '',
+            category: 'general',
+            initiative: false,
+            career: false,
+            rank: 0,
+        },
+
+        effects: [],
+
+        // **** обязательные поля ItemSource ****
+        ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER },
+        sort: 0,
+        folder: null,
+
+        flags: {},
+    };
+
+    const skill = await toRaw(context.sheet).createSkill(stubSkill);
+    await skill?.sheet?.render(true);
 }
+
 
 async function rollSkill(skill: GenesysItem<SkillDataModel>) {
         const approach = await ApproachPrompt.promptForApproach();
