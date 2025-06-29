@@ -41,19 +41,25 @@ export default defineConfig({
 		},
 	},
 	publicDir: 'public',
-	build: {
-		outDir: 'dist',
-		emptyOutDir: true,
-		sourcemap: true,
-		// Avoiding minification is important, because we don't want names of globals/etc. to be mangled.
-		minify: false,
-		lib: {
-			name: 'Genesys',
-			entry: 'src/Genesys.ts',
-			formats: ['es'], // ES Modules
-			fileName: 'Genesys',
-		},
-	},
+        build: {
+                outDir: 'dist',
+                emptyOutDir: true,
+                sourcemap: true,
+                // Avoiding minification is important, because we don't want names of globals/etc. to be mangled.
+                minify: false,
+                lib: {
+                        name: 'Genesys',
+                        entry: 'src/Genesys.ts',
+                        formats: ['es'], // ES Modules
+                        fileName: 'Genesys',
+                },
+                rollupOptions: {
+                        external: ['jquery'],
+                        output: {
+                                globals: { jquery: 'jQuery' },
+                        },
+                },
+        },
 	plugins: [pluginVue()],
 	resolve: {
 		alias: [{ find: '@', replacement: path.resolve(__dirname, 'src') }, { find: '@scss', replacement: path.resolve(__dirname, 'src/scss') }, ...devOnlyAliases, ...releaseOnlyAliases],
