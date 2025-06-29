@@ -398,6 +398,8 @@ Genesys:
     MeleeDefense: Defensa cuerpo a cuerpo
     DefenseRanged: A distancia
     RangedDefense: Defensa a distancia
+    PhysDefense: Defensa física
+    MagicDefense: Defensa mágica
     TotalXP: PE totales
     AvailableXP: PE disponibles
     Characteristic: Característica
