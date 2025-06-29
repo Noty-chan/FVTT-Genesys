@@ -20,7 +20,6 @@ import GenesysRoller from '@/dice/GenesysRoller';
 import ContextMenu from '@/vue/components/ContextMenu.vue';
 import MenuItem from '@/vue/components/MenuItem.vue';
 import MasonryWall from '@yeger/vue-masonry-wall';
-import { Approach } from '@/data/Approaches';
 
 const context = inject<ActorSheetContext<CharacterDataModel, CharacterSheet>>(RootContext)!;
 const system = computed(() => context.data.actor.systemData);
