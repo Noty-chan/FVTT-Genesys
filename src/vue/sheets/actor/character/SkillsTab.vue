@@ -70,10 +70,10 @@ function promptApproach(skillName: string): Promise<Approach | null> {
       title: 'Выбор подхода',
       content,
       buttons: {},
-      render: (html: JQuery) => {
-        html.find('button[data-value]').on('click', (ev) => {
-          resolve((ev.currentTarget as HTMLButtonElement).dataset
-            .value as Approach);
+      render: (html: HTMLElement | JQuery<HTMLElement>) => {
+        const $html = html instanceof $ ? html : $(html);
+        $html.find('button[data-value]').on('click', (ev) => {
+          resolve((ev.currentTarget as HTMLButtonElement).dataset.value as Approach);
           dlg.close();
         });
       },
@@ -83,6 +83,7 @@ function promptApproach(skillName: string): Promise<Approach | null> {
     dlg.render(true);
   });
 }
+
 
 /* -------------------------------------------------
  *  Добавление навыка
