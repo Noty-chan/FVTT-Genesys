@@ -16,6 +16,8 @@ for (const file of fs.readdirSync(PACK_DIR)) {
         const strainVal = data.system.strain.value ?? 0;
         data.system.resource = strainVal;
       }
+      if (data.system.physDefense === undefined) data.system.physDefense = 0;
+      if (data.system.magicDefense === undefined) data.system.magicDefense = 0;
     }
     return JSON.stringify(data);
   });

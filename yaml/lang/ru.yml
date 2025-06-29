@@ -422,6 +422,8 @@ Genesys:
     MeleeDefense: Защита в ближнем бою
     DefenseRanged: Дальний бой
     RangedDefense: Защита в дальнем бою
+    PhysDefense: Физическая защита
+    MagicDefense: Магическая защита
     TotalXP: Всего опыта
     AvailableXP: Доступный опыт
     Characteristic: Характеристика

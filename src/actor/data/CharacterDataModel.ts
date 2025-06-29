@@ -72,9 +72,11 @@ type RelevantTypes = {
 export default abstract class CharacterDataModel extends foundry.abstract.DataModel implements IHasPreCreate<CharacterActor> {
         abstract characteristics: CharacteristicsContainer;
         abstract approaches: ApproachesContainer;
-	abstract soak: number;
-	abstract defense: Defense;
-	abstract wounds: CombatPool;
+       abstract soak: number;
+       abstract defense: Defense;
+       abstract physDefense: number;
+       abstract magicDefense: number;
+       abstract wounds: CombatPool;
 	abstract strain: CombatPool;
 	abstract illustration: string;
 	abstract motivations: Motivations;
@@ -163,17 +165,25 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 	/**
 	 * Total value for Defense (base defenses + armor).
 	 */
-	get totalDefense(): Defense {
-		const armorDefense = (<CharacterActor>(<unknown>this.parent)).items
-			.filter((i) => i.type === 'armor' && (<ArmorItem>i).systemData.state === 'equipped')
-			.map((i) => (<ArmorItem>i).systemData.defense)
-			.reduce((total, d) => total + d, 0);
+        get totalDefense(): Defense {
+                const armorDefense = (<CharacterActor>(<unknown>this.parent)).items
+                        .filter((i) => i.type === 'armor' && (<ArmorItem>i).systemData.state === 'equipped')
+                        .map((i) => (<ArmorItem>i).systemData.defense)
+                        .reduce((total, d) => total + d, 0);
 
-		return {
-			ranged: Math.min(4, this.defense.ranged + armorDefense),
-			melee: Math.min(4, this.defense.melee + armorDefense),
-		};
-	}
+                return {
+                        ranged: Math.min(4, this.defense.ranged + armorDefense),
+                        melee: Math.min(4, this.defense.melee + armorDefense),
+                };
+        }
+
+       get totalPhysDefense(): number {
+               return this.physDefense;
+       }
+
+       get totalMagicDefense(): number {
+               return this.magicDefense;
+       }
 
 	/**
 	 * Amount of XP the character has available to spend right now.
@@ -513,14 +523,16 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 				presence: new fields.NumberField({ integer: true, initial: 0 }),
 			}),
 			soak: new fields.NumberField({ integer: true, initial: 0 }),
-			defense: new fields.SchemaField({
-				melee: new fields.NumberField({ integer: true, initial: 0 }),
-				ranged: new fields.NumberField({ integer: true, initial: 0 }),
-			}),
-			wounds: new fields.SchemaField({
-				value: new fields.NumberField({ integer: true, initial: 0 }),
-				max: new fields.NumberField({ integer: true, initial: 0 }),
-			}),
+                       defense: new fields.SchemaField({
+                               melee: new fields.NumberField({ integer: true, initial: 0 }),
+                               ranged: new fields.NumberField({ integer: true, initial: 0 }),
+                       }),
+                       physDefense: new fields.NumberField({ integer: true, initial: 0 }),
+                       magicDefense: new fields.NumberField({ integer: true, initial: 0 }),
+                       wounds: new fields.SchemaField({
+                               value: new fields.NumberField({ integer: true, initial: 0 }),
+                               max: new fields.NumberField({ integer: true, initial: 0 }),
+                       }),
 			strain: new fields.SchemaField({
 				value: new fields.NumberField({ integer: true, initial: 0 }),
 				max: new fields.NumberField({ integer: true, initial: 0 }),

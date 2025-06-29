@@ -405,6 +405,8 @@ Genesys:
     MeleeDefense: Melee Defense
     DefenseRanged: Ranged
     RangedDefense: Ranged Defense
+    PhysDefense: Physical Defense
+    MagicDefense: Magic Defense
     TotalXP: Total XP
     AvailableXP: Available XP
     Characteristic: Characteristic

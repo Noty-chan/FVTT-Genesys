@@ -68,12 +68,24 @@ onBeforeUpdate(updateEffects);
                                 label="Genesys.Labels.Defense"
                                 primary-label="Genesys.Labels.DefenseRanged"
                                 :value="system.totalDefense.ranged"
-				has-secondary
-				secondary-label="Genesys.Labels.DefenseMelee"
-				:secondary-value="system.totalDefense.melee"
-				read-only
-			/>
-		</section>
+                                has-secondary
+                                secondary-label="Genesys.Labels.DefenseMelee"
+                                :secondary-value="system.totalDefense.melee"
+                                read-only
+                        />
+
+                        <CombatStat
+                                label="Genesys.Labels.PhysDefense"
+                                :value="system.totalPhysDefense"
+                                read-only
+                        />
+
+                        <CombatStat
+                                label="Genesys.Labels.MagicDefense"
+                                :value="system.totalMagicDefense"
+                                read-only
+                        />
+                </section>
 
 		<nav class="sheet-tabs" data-group="primary">
 			<div class="spacer"></div>
