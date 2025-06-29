@@ -20,18 +20,18 @@ const system = computed(() => toRaw(context.data.actor).systemData);
 const effects = ref<any>([]);
 
 async function addEffect(category: string) {
-	await toRaw(context.sheet.actor).createEmbeddedDocuments('ActiveEffect', [
-		{
-			label: context.data.actor.name,
-			img: 'icons/svg/aura.svg',
-			disabled: category === 'suppressed',
-			duration: category === 'temporary' ? { rounds: 1 } : undefined,
-		},
-	]);
+    await toRaw(context.sheet.actor).createEmbeddedDocuments('ActiveEffect', [
+        {
+            label: context.data.actor.name,
+            img: 'icons/svg/aura.svg',
+            disabled: category === 'suppressed',
+            duration: category === 'temporary' ? { rounds: 1 } : undefined,
+        },
+    ]);
 }
 
 function updateEffects() {
-	effects.value = [...toRaw(context.data.actor).effects];
+    effects.value = [...toRaw(context.data.actor).effects];
 }
 
 onBeforeMount(updateEffects);
@@ -39,87 +39,78 @@ onBeforeUpdate(updateEffects);
 </script>
 
 <template>
-	<div class="character-sheet">
-		<CharacterMeta />
+    <div class="character-sheet">
+        <CharacterMeta />
 
-                <section class="combat-stat-row">
-                        <CombatStat
-                                label="Genesys.Labels.Wounds"
-                                primary-label="Genesys.Labels.Threshold"
-                                :value="system.wounds.max"
-                                has-secondary
-                                secondary-label="Genesys.Labels.Current"
-                                secondary-name="system.wounds.value"
-                                :secondary-value="system.wounds.value"
-                        />
+        <section class="combat-stat-row">
+            <CombatStat
+                label="Genesys.Labels.Wounds"
+                primary-label="Genesys.Labels.Threshold"
+                :value="system.wounds.max"
+                has-secondary
+                secondary-label="Genesys.Labels.Current"
+                secondary-name="system.wounds.value"
+                :secondary-value="system.wounds.value"
+            />
 
+            <CombatStat :label="system.resourceName" :value="system.resource" />
 
-                        <CombatStat :label="system.resourceName" :value="system.resource" />
+            <CombatStat label="XP" :value="system.xp" editable />
 
-                        <CombatStat label="XP" :value="system.xp" editable />
+            <CombatStat
+                label="Genesys.Labels.Defense"
+                primary-label="Genesys.Labels.DefenseRanged"
+                :value="system.totalDefense.ranged"
+                has-secondary
+                secondary-label="Genesys.Labels.DefenseMelee"
+                :secondary-value="system.totalDefense.melee"
+                read-only
+            />
+        </section>
 
-                        <CombatStat
-                                label="Genesys.Labels.Defense"
-                                primary-label="Genesys.Labels.DefenseRanged"
-                                :value="system.totalDefense.ranged"
-                                has-secondary
-                                secondary-label="Genesys.Labels.DefenseMelee"
-                                :secondary-value="system.totalDefense.melee"
-                                read-only
-                        />
-                </section>
+        <section class="resources">
+            <ResourceDots label="Genesys.Labels.Contacts" :value="system.contacts" name="system.contacts" icon="fas fa-user-friends" />
+            <ResourceDots label="Genesys.Labels.Intel" :value="system.intel" name="system.intel" icon="fas fa-lightbulb" />
+            <ResourceDots label="Genesys.Labels.Will" :value="system.will" name="system.will" icon="fas fa-bolt" />
+        </section>
 
-                <section class="resources">
-                        <ResourceDots label="Genesys.Labels.Contacts" :value="system.contacts" name="system.contacts" icon="fas fa-user-friends" />
-                        <ResourceDots label="Genesys.Labels.Intel" :value="system.intel" name="system.intel" icon="fas fa-lightbulb" />
-                        <ResourceDots label="Genesys.Labels.Will" :value="system.will" name="system.will" icon="fas fa-bolt" />
-                </section>
+        <nav class="sheet-tabs" data-group="primary">
+            <div class="spacer"></div>
+            <a class="item" data-tab="skills"><Localized label="Genesys.Tabs.Skills" /></a>
+            <a class="item" data-tab="combat"><Localized label="Genesys.Tabs.Combat" /></a>
+            <a class="item" data-tab="talents"><Localized label="Genesys.Tabs.Talents" /></a>
+            <!-- <a class="item" data-tab="magic"><Localized label="Genesys.Tabs.Magic"/></a> -->
+            <a class="item" data-tab="inventory"><Localized label="Genesys.Tabs.Inventory" /></a>
+            <a class="item" data-tab="effects"><Localized label="Genesys.Tabs.Effects" /></a>
+            <a class="item" data-tab="journal"><Localized label="Genesys.Tabs.Journal" /></a>
+            <div class="spacer"></div>
+        </nav>
 
-		<nav class="sheet-tabs" data-group="primary">
-			<div class="spacer"></div>
-
-			<a class="item" data-tab="skills"><Localized label="Genesys.Tabs.Skills" /></a>
-			<a class="item" data-tab="combat"><Localized label="Genesys.Tabs.Combat" /></a>
-			<a class="item" data-tab="talents"><Localized label="Genesys.Tabs.Talents" /></a>
-			<!--			<a class="item" data-tab="magic"><Localized label="Genesys.Tabs.Magic"/></a>-->
-			<a class="item" data-tab="inventory"><Localized label="Genesys.Tabs.Inventory" /></a>
-			<a class="item" data-tab="effects"><Localized label="Genesys.Tabs.Effects" /></a>
-			<a class="item" data-tab="journal"><Localized label="Genesys.Tabs.Journal" /></a>
-
-			<div class="spacer"></div>
-		</nav>
-
-		<section class="sheet-body">
-			<div class="tab" data-tab="skills"><SkillsTab /></div>
-
-			<div class="tab" data-tab="combat"><CombatTab /></div>
-
-			<div class="tab" data-tab="talents"><TalentsTab /></div>
-
-			<!--			<div class="tab" data-tab="magic">MAGIC</div>-->
-
-			<div class="tab" data-tab="inventory"><InventoryTab /></div>
-
-			<div class="tab" data-tab="effects">
-				<EffectsView :effects="[...effects]" @add-effect="addEffect" />
-			</div>
-
-			<div class="tab" data-tab="journal">
-				<JournalTab />
-			</div>
-		</section>
-	</div>
+        <section class="sheet-body">
+            <div class="tab" data-tab="skills"><SkillsTab /></div>
+            <div class="tab" data-tab="combat"><CombatTab /></div>
+            <div class="tab" data-tab="talents"><TalentsTab /></div>
+            <!-- <div class="tab" data-tab="magic">MAGIC</div> -->
+            <div class="tab" data-tab="inventory"><InventoryTab /></div>
+            <div class="tab" data-tab="effects">
+                <EffectsView :effects="[...effects]" @add-effect="addEffect" />
+            </div>
+            <div class="tab" data-tab="journal">
+                <JournalTab />
+            </div>
+        </section>
+    </div>
 </template>
 
 <style lang="scss" scoped>
 .character-sheet {
-	width: 100%;
-	height: 100%;
+    width: 100%;
+    height: 100%;
 
-	display: grid;
-	// Meta, Combat Stats, Tabs, tab content
-	grid-template-rows: repeat(3, auto) 1fr;
-	gap: 0.5em;
+    display: grid;
+    // Meta, Combat Stats, Tabs, tab content
+    grid-template-rows: repeat(3, auto) 1fr;
+    gap: 0.5em;
 }
 
 // Container for the character's secondary combat stats (wounds, resource, etc.)
@@ -139,10 +130,11 @@ onBeforeUpdate(updateEffects);
             width: 165px;
         }
     }
-} // ← ЭТОТ блок был не закрыт!
+}
 
 .resources {
     display: flex;
     justify-content: center;
     gap: 1em;
 }
+</style>
