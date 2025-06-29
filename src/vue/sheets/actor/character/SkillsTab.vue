@@ -4,9 +4,10 @@ import { RootContext, ActorSheetContext } from '@/vue/SheetContext';
 import CharacterDataModel from '@/actor/data/CharacterDataModel';
 import SkillDataModel from '@/item/data/SkillDataModel';
 import GenesysItem from '@/item/GenesysItem';
-import Localized from '@/vue/components/Localized.vue';
 import { Approach } from '@/data/Approaches';
 import GenesysRoller from '@/dice/GenesysRoller';
+import ApproachPrompt from '@/app/ApproachPrompt';
+import Localized from '@/vue/components/Localized.vue';
 
 const context = inject<ActorSheetContext<CharacterDataModel>>(RootContext)!;
 const system = computed(() => context.data.actor.systemData);
@@ -21,34 +22,42 @@ const ownedSkills = computed(
       .sort((a, b) => a.name.localeCompare(b.name)) as GenesysItem<SkillDataModel>[],
 );
 
+function clamp(val: number, min: number, max: number) {
+  return Math.min(Math.max(val, min), max);
+}
+
 async function addSkill() {
-  // выбор шаблона или «Пустой»
-  const choices = [
+  // собрать варианты: все базовые + «Пустой»
+  const labels = [
     ...CONFIG.genesys.skills.map((s: GenesysItem) => s.name),
     game.i18n.localize('Genesys.Labels.Blank'),
   ];
 
-  const { value: name } = await Dialog.prompt({
-    title: game.i18n.localize('Genesys.Labels.NewSkill'),
-    content: `<p><select name="skill">${choices
-      .map((c) => `<option>${c}</option>`)
-      .join('')}</select></p>`,
-    label: 'ОК',
-  });
+  // простейший HTML-prompt
+  const html = `<p><select name="skill">${labels
+    .map((c) => `<option value="${c}">${c}</option>`)
+    .join('')}</select></p>`;
 
-  if (!name) return;
+  const choice =
+    await (Dialog as any).prompt?.({
+      title: game.i18n.localize('Genesys.Labels.NewSkill'),
+      content: html,
+      label: 'OK',
+    });
 
-  // копируем данные шаблона или создаём пустой
+  if (!choice) return;
+
+  // если выбрали «пустой» — делаем дефолт, иначе клонируем шаблон
   const template = CONFIG.genesys.skills.find(
-    (s: GenesysItem) => s.name === name,
+    (s: GenesysItem) => s.name === choice,
   ) as GenesysItem<SkillDataModel> | undefined;
 
-  const source: foundry.data.ItemSource<'skill', SkillDataModel['_source']> =
+  const src: foundry.data.ItemSource<'skill', SkillDataModel['_source']> =
     template
       ? duplicate(template.toObject())
       : {
           _id: foundry.utils.randomID(),
-          name: name === game.i18n.localize('Genesys.Labels.Blank') ? 'New Skill' : name,
+          name: 'New Skill',
           type: 'skill',
           img: 'icons/svg/book.svg',
           system: {
@@ -66,7 +75,11 @@ async function addSkill() {
           flags: {},
         };
 
-  await toRaw(context.sheet).createSkill(source);
+  const created = (await toRaw(context.data.actor).createEmbeddedDocuments(
+    'Item',
+    [src],
+  )) as GenesysItem<SkillDataModel>[];
+  await created[0]?.sheet?.render(true);
 }
 
 async function deleteSkill(skill: GenesysItem<SkillDataModel>) {
@@ -78,7 +91,7 @@ async function deleteSkill(skill: GenesysItem<SkillDataModel>) {
 }
 
 async function rollSkill(skill: GenesysItem<SkillDataModel>) {
-  const approach: Approach | null = await game.genesys.promptApproach();
+  const approach = await ApproachPrompt.promptForApproach();
   if (!approach) return;
 
   await GenesysRoller.skillRoll({
@@ -96,17 +109,14 @@ async function rollSkill(skill: GenesysItem<SkillDataModel>) {
   <section class="skills-tab">
     <!-- подходы -------------------------------------------------------------->
     <div class="approaches">
-      <div
-        v-for="appr in Object.keys(system.approaches)"
-        :key="appr"
-        class="approach"
-      >
-        <label>{{ $t(`Genesys.Approach.${appr.capitalize()}`) }}</label>
+      <div v-for="key in Object.keys(system.approaches)" :key="key" class="approach">
+        <label><Localized :label="`Genesys.Approach.${key.capitalize()}`" /></label>
         <input
           type="number"
           min="0"
           max="5"
-          v-model.number="system.approaches[appr]"
+          :value="(system.approaches as any)[key]"
+          @input="(e:any)=> (system.approaches as any)[key] = clamp(+e.target.value,0,5)"
         />
       </div>
     </div>
@@ -116,8 +126,8 @@ async function rollSkill(skill: GenesysItem<SkillDataModel>) {
       <thead>
         <tr>
           <th><Localized label="Genesys.Labels.Skill" /></th>
-          <th style="width: 4rem"><Localized label="Genesys.Labels.Rank" /></th>
-          <th style="width: 6rem"></th>
+          <th style="width:4rem"><Localized label="Genesys.Labels.Rank" /></th>
+          <th style="width:6rem"></th>
         </tr>
       </thead>
       <tbody>
@@ -131,30 +141,21 @@ async function rollSkill(skill: GenesysItem<SkillDataModel>) {
               min="0"
               max="5"
               :value="skill.system.rank"
-              @change="
-                (e: any) =>
-                  skill.update({
-                    'system.rank': Math.clamped(+e.target.value, 0, 5),
-                  })
+              @input="
+                (e:any)=> skill.update({'system.rank':clamp(+e.target.value,0,5)})
               "
             />
           </td>
           <td class="actions">
-            <a @click="rollSkill(skill)" title="Roll"
-              ><i class="fas fa-dice"></i
-            ></a>
-            <a @click="deleteSkill(skill)" title="Delete"
-              ><i class="fas fa-trash"></i
-            ></a>
+            <a @click="rollSkill(skill)" title="Roll"><i class="fas fa-dice"></i></a>
+            <a @click="deleteSkill(skill)" title="Delete"><i class="fas fa-trash"></i></a>
           </td>
         </tr>
       </tbody>
     </table>
 
     <div class="add-skill">
-      <button @click="addSkill">
-        <i class="fas fa-plus"></i> {{ $t('Genesys.Labels.AddSkill') }}
-      </button>
+      <button @click="addSkill"> <i class="fas fa-plus"></i> <Localized label="Genesys.Labels.AddSkill" /></button>
     </div>
   </section>
 </template>
