@@ -29,6 +29,13 @@
       "system": "hisuya-genesys",
       "path": "./packs/hisuya-skills.db",
       "type": "Item"
+    },
+    {
+      "name": "hisuya-skills-import",
+      "label": "Hisuya Skills Import",
+      "system": "hisuya-genesys",
+      "path": "./packs/hisuya-skills/skills.json",
+      "type": "Item"
     }
   ],
   "socket": true,

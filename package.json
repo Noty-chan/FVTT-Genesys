@@ -15,7 +15,8 @@
     "lint": "eslint src --ext .vue,.js,.ts",
     "format": "prettier --write src/ types/",
     "release": "yarn build && gulp zip",
-    "test": "node --test"
+    "test": "node --test",
+    "import-skills": "node scripts/import-hisuya-skills.js"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.7.2",

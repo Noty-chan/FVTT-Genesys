@@ -334,6 +334,11 @@ Genesys:
     Combat: Combat
     Social: Social
     Knowledge: Knowledge
+    Melee: "Ближний и рукопашный бой"
+    RangedTech: "Дальний бой, техника и манёвры"
+    Field: "Аналитика, полевая подготовка"
+    SocialOrg: "Социальные и организационные навыки"
+    TechMagic: "Технологии и маготехника"
 
   # Archetype Data
   Archetype:
