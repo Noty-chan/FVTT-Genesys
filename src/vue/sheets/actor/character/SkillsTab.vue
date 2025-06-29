@@ -12,7 +12,7 @@ import GenesysRoller from '@/dice/GenesysRoller';
 const context = inject<ActorSheetContext<CharacterDataModel, CharacterSheet>>(RootContext)!;
 const system  = computed(() => context.data.actor.systemData);
 
-/* ---------- список навыков персонажа (+ шаблоны из CONFIG) ---------- */
+/* ---------- список навыков персонажа ---------- */
 const SKILL_CATEGORY_SORT_ORDER = { general: 0, magic: 1, combat: 2, social: 3, knowledge: 4 };
 
 const skills = computed(() => {
@@ -36,17 +36,16 @@ const skillCategories = computed(() =>
   ),
 );
 
-/* ---------- локализованные подписи ---------- */
+/* ---------- локализация ---------- */
 const addSkillLabel = game.i18n.localize('Genesys.Labels.AddSkill');
 const customLabel   = game.i18n.localize('Genesys.Labels.CustomSkill');
 
 /* ---------- Добавление навыка ---------- */
 async function addSkill() {
-  /* готовые навыки, которых ещё нет у персонажа */
+  /* навыки, которых ещё нет у актёра */
   const available = CONFIG.genesys.skills
     .filter((tpl) => !context.data.actor.items.find((i) => i.type === 'skill' && i.name === tpl.name));
 
-  /* HTML для диалога выбора */
   const content =
     `<form class="genesys"><div class="form-group">
        <label>${addSkillLabel}</label>
@@ -55,20 +54,21 @@ async function addSkill() {
        + `<option value="__custom">-- ${customLabel} --</option>`
      + `</select></div></form>`;
 
-  /* выбор пользователя */
-  const chosen = await Dialog.prompt({
+  /* Dialog.prompt типы могут отсутствовать – приводим к any */
+  const chosen = await (Dialog as any).prompt({
     title  : addSkillLabel,
     content,
-    callback: (html) => html.find('select[name="skill"]').val() as string | null,
+    callback: (html: JQuery<HTMLElement>) =>
+      html.find('select[name="skill"]').val() as string | null,
     rejectClose: false,
   });
 
   if (!chosen) return;
 
-  /* если «кастомный» — делаем пустой шаблон */
   let source: foundry.data.ItemSource<'skill', SkillDataModel['_source']>;
 
   if (chosen === '__custom') {
+    /* пустой шаблон */
     source = {
       _id : foundry.utils.randomID(),
       name: customLabel,
@@ -89,16 +89,17 @@ async function addSkill() {
       flags    : {},
     };
   } else {
-    /* берём объект-шаблон из CONFIG, копируем, сбрасываем id */
-    const tpl = available.find((s) => s.id === chosen)!;
-    source    = duplicate(tpl.toObject()) as typeof tpl['_source'];
-    source._id = foundry.utils.randomID();
-    /* гарантируем владельца */
-    (source as any).ownership ??= { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER };
+    /* копия шаблона из компендиума */
+    const tpl       = available.find((s) => s.id === chosen)!;
+    const tplSource = duplicate(tpl.toObject()) as any;
+    tplSource._id   = foundry.utils.randomID();
+    tplSource.ownership ??= { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER };
+
+    source = tplSource as unknown as foundry.data.ItemSource<'skill', SkillDataModel['_source']>;
   }
 
-  /* создаём Item и открываем редактор */
-  const skill = await toRaw(context.sheet).createSkill(source) as unknown as GenesysItem<SkillDataModel>;
+  /* создаём Item и открываем лист */
+  const skill = await (toRaw(context.sheet) as any).createSkill(source) as GenesysItem<SkillDataModel>;
   await skill?.sheet?.render(true);
 }
 
@@ -117,5 +118,22 @@ async function rollSkill(skill: GenesysItem<SkillDataModel>) {
   });
 }
 
-/* остальной код (toggleCareerSkill, purchaseSkillRank, и т.д.) оставляем без изменений */
+/* ---------- прочие утилиты, оставлены без изменений ---------- */
+async function purchaseSkillRank(skill: GenesysItem<SkillDataModel>) {
+  if (skill.systemData.rank >= 5 || system.value.availableXP < 1) return;
+
+  await toRaw(context.data.actor).systemData.spendXP(1, 'skill:' + skill.name);
+  await toRaw(skill).update({ 'system.rank': skill.systemData.rank + 1 });
+}
+
+async function toggleCareerSkill(skill: GenesysItem<SkillDataModel>) {
+  await toRaw(skill).update({ 'system.career': !skill.systemData.career });
+}
+
+async function freeSkillRank(skill: GenesysItem<SkillDataModel>, adj: number) {
+  await toRaw(skill).update({ 'system.rank': Math.max(0, skill.systemData.rank + adj) });
+}
+
+async function editSkill(skill: GenesysItem<SkillDataModel>) { await toRaw(skill).sheet?.render(true); }
+async function deleteSkill(skill: GenesysItem<SkillDataModel>) { await toRaw(skill).delete(); }
 </script>
