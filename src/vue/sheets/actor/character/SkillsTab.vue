@@ -4,7 +4,8 @@ import { ActorSheetContext, RootContext } from '@/vue/SheetContext';
 import CharacterDataModel from '@/actor/data/CharacterDataModel';
 import GenesysItem from '@/item/GenesysItem';
 import SkillDataModel from '@/item/data/SkillDataModel';
-
+import $ from 'jquery';
+	
 /* -------------------------------------------------
  *  Контекст листа
  * ------------------------------------------------*/
@@ -71,11 +72,18 @@ function promptApproach(skillName: string): Promise<Approach | null> {
       content,
       buttons: {},
       render: (html: HTMLElement | JQuery<HTMLElement>) => {
+        // превращаем в jQuery-объект, чтобы спокойно пользоваться .find()
         const $html = html instanceof $ ? html : $(html);
-        $html.find('button[data-value]').on('click', (ev) => {
-          resolve((ev.currentTarget as HTMLButtonElement).dataset.value as Approach);
-          dlg.close();
-        });
+
+        $html.find('button[data-value]').on(
+          'click',
+          (ev: JQuery.ClickEvent<HTMLButtonElement>) => {
+            resolve(
+              (ev.currentTarget.dataset.value as Approach) ?? null,
+            );
+            dlg.close();
+          },
+        );
       },
       close: () => resolve(null),
     });
@@ -83,7 +91,6 @@ function promptApproach(skillName: string): Promise<Approach | null> {
     dlg.render(true);
   });
 }
-
 
 /* -------------------------------------------------
  *  Добавление навыка
