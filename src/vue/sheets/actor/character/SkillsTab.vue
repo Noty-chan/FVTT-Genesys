@@ -1,134 +1,209 @@
 <script lang="ts" setup>
+/**
+ * Упрощённая вкладка «Навыки».
+ *  – «Добавить навык» показывает диалог со списком навыков из CONFIG.genesys.skills
+ *    плюс вариант «Пользовательский».
+ *  – При выборе из списка создаётся копия шаблона (с описанием!).
+ *  – Название навыка в таблице содержит title-подсказку с его описанием.
+ */
+
 import { computed, inject, toRaw } from 'vue';
 
 import CharacterDataModel from '@/actor/data/CharacterDataModel';
 import { ActorSheetContext, RootContext } from '@/vue/SheetContext';
 import CharacterSheet from '@/actor/sheets/CharacterSheet';
+import Characteristic from '@/vue/components/character/Characteristic.vue';
 import SkillDataModel from '@/item/data/SkillDataModel';
+import Localized from '@/vue/components/Localized.vue';
 import GenesysItem from '@/item/GenesysItem';
-import ApproachPrompt from '@/app/ApproachPrompt';
+import XPContainer from '@/vue/components/character/XPContainer.vue';
 import GenesysRoller from '@/dice/GenesysRoller';
+import ContextMenu from '@/vue/components/ContextMenu.vue';
+import MenuItem from '@/vue/components/MenuItem.vue';
+import MasonryWall from '@yeger/vue-masonry-wall';
+import { Approach } from '@/data/Approaches';
 
-const context = inject<ActorSheetContext<CharacterDataModel, CharacterSheet>>(RootContext)!;
-const system  = computed(() => context.data.actor.systemData);
+const ctx = inject<ActorSheetContext<CharacterDataModel, CharacterSheet>>(RootContext)!;
+const system = computed(() => ctx.data.actor.systemData);
 
-/* ---------- построение списка навыков ---------- */
-const SKILL_CATEGORY_SORT_ORDER = { general: 0, magic: 1, combat: 2, social: 3, knowledge: 4 };
+/* -------------------- список навыков -------------------- */
 
 const skills = computed(() => {
-  const owned = new Map(
-    toRaw(context.data.actor).items
-      .filter((i) => i.type === 'skill')
-      .map((i) => [i.name, i as GenesysItem<SkillDataModel>]),
-  );
-  return CONFIG.genesys.skills.map(
-    (s: GenesysItem<SkillDataModel>) => owned.get(s.name) ?? s,
-  );
+	const owned = new Map(
+		toRaw(ctx.data.actor).items
+			.filter((i) => i.type === 'skill')
+			.map((i) => [i.name, i as GenesysItem<SkillDataModel>]),
+	);
+	return CONFIG.genesys.skills.map(
+		(s: GenesysItem<SkillDataModel>) => owned.get(s.name) ?? s,
+	);
 });
 
-const skillCategories = computed(() =>
-  Array.from(
-    new Set(
-      CONFIG.genesys.skills
-        .map((s: GenesysItem<SkillDataModel>) => s.systemData.category)
-        .sort((l, r) => SKILL_CATEGORY_SORT_ORDER[l] - SKILL_CATEGORY_SORT_ORDER[r]),
-    ),
-  ),
-);
+/* -------------------- добавление навыка -------------------- */
 
-/* ---------- подписи ---------- */
-const addSkillLabel = game.i18n.localize('Genesys.Labels.AddSkill');
-const customLabel   = game.i18n.localize('Genesys.Labels.CustomSkill');
-
-/* ---------- добавление навыка ---------- */
 async function addSkill() {
-  const available = CONFIG.genesys.skills
-    .filter((tpl) => !context.data.actor.items.find((i) => i.type === 'skill' && i.name === tpl.name));
+	const choices: Record<string, string> = {
+		blank: game.i18n.localize('Genesys.Labels.CustomSkill'),
+	};
+	for (const s of CONFIG.genesys.skills) {
+		choices[s.id ?? s.name] = s.name;
+	}
 
-  const content =
-    `<form class="genesys"><div class="form-group">
-       <label>${addSkillLabel}</label>
-       <select name="skill" style="width:100%">`
-       + available.map((s) => `<option value="${s.id}">${s.name}</option>`).join('')
-       + `<option value="__custom">-- ${customLabel} --</option>`
-     + `</select></div></form>`;
+	// Foundry V10: Dialog.prompt; типы у него «любые», поэтому as any
+	const picked: string | null = await (Dialog as any).prompt({
+		title: game.i18n.localize('Genesys.Labels.AddSkill'),
+		label: game.i18n.localize('Genesys.UI.Add'),
+		choices,
+	});
 
-  /* Dialog.prompt нет в typings → приводим к any */
-  const chosen = await (Dialog as any).prompt({
-    title  : addSkillLabel,
-    content,
-    callback: (html: JQuery) => html.find('select[name="skill"]').val() as string | null,
-    rejectClose: false,
-  });
+	if (picked === null) return; // отмена
 
-  if (!chosen) return;
+	let source: foundry.data.ItemSource<'skill', SkillDataModel['_source']>;
 
-  let source: foundry.data.ItemSource<'skill', SkillDataModel['_source']>;
+	if (picked === 'blank') {
+		source = {
+			_id: foundry.utils.randomID(),
+			name: game.i18n.localize('Genesys.Labels.NewSkill'),
+			type: 'skill',
+			img: 'icons/svg/book.svg',
+			system: {
+				description: '',
+				source: '',
+				category: 'general',
+				initiative: false,
+				career: false,
+				rank: 0,
+			},
+			effects: [],
+			ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER },
+			sort: 0,
+			folder: null,
+			flags: {},
+		};
+	} else {
+		const tpl = CONFIG.genesys.skills.find(
+			(s: GenesysItem<SkillDataModel>) => (s.id ?? s.name) === picked,
+		)!;
+		source = { ...(tpl.toObject() as any), _id: foundry.utils.randomID() };
+	}
 
-  if (chosen === '__custom') {
-    source = {
-      _id : foundry.utils.randomID(),
-      name: customLabel,
-      type: 'skill',
-      img : 'icons/svg/book.svg',
-      system: {
-        description: '',
-        source     : '',
-        category   : 'general',
-        initiative : false,
-        career     : false,
-        rank       : 0,
-      },
-      effects  : [],
-      ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER },
-      sort     : 0,
-      folder   : null,
-      flags    : {},
-    };
-  } else {
-    const tpl  = available.find((s) => s.id === chosen)!;
-    source     = foundry.utils.duplicate(tpl.toObject()) as foundry.data.ItemSource<'skill', SkillDataModel['_source']>;
-    source._id = foundry.utils.randomID();
-    (source as any).ownership ??= { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER };
-  }
-
-  const skill = await (toRaw(context.sheet) as any).createSkill(source) as GenesysItem<SkillDataModel>;
-  await skill?.sheet?.render(true);
+	const skill = await (toRaw(ctx.sheet) as any).createSkill(
+		source as any,
+	) as GenesysItem<SkillDataModel>;
+	await skill?.sheet?.render(true);
 }
 
-/* ---------- бросок навыка ---------- */
+/* -------------------- бросок -------------------- */
+
 async function rollSkill(skill: GenesysItem<SkillDataModel>) {
-  const approach = await ApproachPrompt.promptForApproach();
-  if (!approach) return;
+	const approach: Approach | null = await (Dialog as any).prompt({
+		title: game.i18n.localize('Genesys.ApproachPrompt.Hint'),
+		label: 'OK',
+		choices: {
+			push: game.i18n.localize('Genesys.Approach.Push'),
+			maneuver: game.i18n.localize('Genesys.Approach.Maneuver'),
+			focus: game.i18n.localize('Genesys.Approach.Focus'),
+		},
+	});
+	if (!approach) return;
 
-  await GenesysRoller.skillRoll({
-    actor : toRaw(context.data.actor),
-    approach,
-    usesSuperCharacteristic: false,
-    skillId: skill.id,
-    formula: '',
-    symbols: {},
-  });
+	await GenesysRoller.skillRoll({
+		actor: toRaw(ctx.data.actor),
+		approach: approach as Approach,
+		usesSuperCharacteristic: false,
+		skillId: skill.id,
+		formula: '',
+		symbols: {},
+	});
 }
-
-/* ----- оставшийся служебный код (career toggle, rank-up и т.п.) ----- */
-async function purchaseSkillRank(skill: GenesysItem<SkillDataModel>) {
-  if (skill.systemData.rank >= 5 || system.value.availableXP < 1) return;
-
-  await toRaw(context.data.actor).systemData.spendXP(1, 'skill:' + skill.name);
-  await skill.update({ 'system.rank': skill.systemData.rank + 1 });
-}
-
-async function toggleCareerSkill(skill: GenesysItem<SkillDataModel>) {
-  await skill.update({ 'system.career': !skill.systemData.career });
-}
-
-async function freeSkillRank(skill: GenesysItem<SkillDataModel>, adjustment: number) {
-  await skill.update({ 'system.rank': Math.max(0, skill.systemData.rank + adjustment) });
-}
-
-async function editSkill(skill: GenesysItem<SkillDataModel>)   { await skill.sheet?.render(true); }
-async function deleteSkill(skill: GenesysItem<SkillDataModel>) { await skill.delete(); }
 </script>
 
-<!-- template и style блоки оставлены прежними -->
+<template>
+	<section class="tab-skills">
+		<!-- характеристики-подходы -->
+		<div class="approaches-row">
+			<Characteristic label="Genesys.Approach.Push" :value="system.approaches.push" name="system.approaches.push" can-edit />
+			<Characteristic label="Genesys.Approach.Maneuver" :value="system.approaches.maneuver" name="system.approaches.maneuver" can-edit />
+			<Characteristic label="Genesys.Approach.Focus" :value="system.approaches.focus" name="system.approaches.focus" can-edit />
+		</div>
+
+		<!-- список навыков -->
+		<div class="skills-row">
+			<div class="add-skill">
+				<a @click="addSkill"><i class="fas fa-plus"></i> {{ $t?.('Genesys.Labels.AddSkill') ?? 'Add skill' }}</a>
+			</div>
+
+			<MasonryWall :column-width="300" :items="[1]" :gap="8">
+				<!-- один столбец – чтобы работал masonry-layout -->
+				<div class="skill-category">
+					<div class="body">
+						<ContextMenu
+							v-for="sk in skills"
+							:key="sk.id"
+							class="row skill"
+						>
+							<img :src="sk.img" :alt="sk.name" />
+							<a
+								class="name"
+								@click="rollSkill(sk)"
+								:title="sk.systemData.description"
+							>
+								{{ sk.name }}
+							</a>
+							<span class="rank-display">{{ sk.systemData.rank }}</span>
+						</ContextMenu>
+					</div>
+				</div>
+			</MasonryWall>
+		</div>
+
+		<!-- опыт -->
+		<section class="experience">
+			<XPContainer label="Genesys.Labels.TotalXP" :value="system.totalXP" />
+			<XPContainer label="Genesys.Labels.AvailableXP" :value="system.availableXP" />
+		</section>
+	</section>
+</template>
+
+<style lang="scss" scoped>
+@use '@scss/vars/colors.scss';
+
+.tab-skills {
+	display: grid;
+	grid-template-rows: auto auto auto 1fr;
+	grid-template-columns: 1fr auto 1fr;
+	gap: 0.5em;
+}
+
+.approaches-row {
+	grid-column: 2 / span 1;
+	display: flex;
+	justify-content: center;
+	gap: 3em;
+}
+
+.skills-row {
+	grid-column: 1 / span all;
+	padding: 0 0.5em;
+
+	.add-skill {
+		text-align: right;
+		margin-bottom: 0.25rem;
+	}
+
+	.skill-category .row {
+		display: grid;
+		grid-template-columns: 1.5rem 1fr auto;
+		align-items: center;
+		gap: 0.25rem;
+
+		.rank-display {
+			text-align: center;
+			min-width: 1.5rem;
+			border: 1px dashed black;
+			border-radius: 0.75rem;
+			background: colors.$light-blue;
+		}
+	}
+}
+</style>
