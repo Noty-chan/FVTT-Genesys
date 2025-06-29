@@ -26,6 +26,8 @@ import { Approach } from '@/data/Approaches';
 const ctx = inject<ActorSheetContext<CharacterDataModel, CharacterSheet>>(RootContext)!;
 const system = computed(() => ctx.data.actor.systemData);
 
+const addSkillLabel = game.i18n.localize('Genesys.Labels.AddSkill'); // ← исправлено
+
 /* -------------------- список навыков -------------------- */
 
 const skills = computed(() => {
@@ -130,7 +132,7 @@ async function rollSkill(skill: GenesysItem<SkillDataModel>) {
 		<!-- список навыков -->
 		<div class="skills-row">
 			<div class="add-skill">
-				<a @click="addSkill"><i class="fas fa-plus"></i> {{ $t?.('Genesys.Labels.AddSkill') ?? 'Add skill' }}</a>
+				<a @click="addSkill"><i class="fas fa-plus"></i> {{ addSkillLabel }}</a>
 			</div>
 
 			<MasonryWall :column-width="300" :items="[1]" :gap="8">
