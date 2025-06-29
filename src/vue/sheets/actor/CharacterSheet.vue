@@ -130,7 +130,7 @@ onBeforeUpdate(updateEffects);
     align-items: center;
     justify-content: space-around;
 
-    // When the sheet is wider than 700px, просто центрируем stat boxes.
+    // When the sheet is wider than 700px, simply center the stat boxes.
     @container sheet (min-width: 700px) {
         display: flex;
         justify-content: center;
@@ -139,7 +139,7 @@ onBeforeUpdate(updateEffects);
             width: 165px;
         }
     }
-}
+} // ← ЭТОТ блок был не закрыт!
 
 .resources {
     display: flex;
