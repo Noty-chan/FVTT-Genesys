@@ -10,7 +10,6 @@ import AdversaryDataModel from '@/actor/data/AdversaryDataModel';
 import MinionDataModel from '@/actor/data/MinionDataModel';
 
 import DicePrompt from '@/app/DicePrompt';
-import type { DicePromptOptions } from '@/app/DicePrompt';
 import ApproachPrompt from '@/app/ApproachPrompt';
 import { Approach } from '@/data/Approaches';
 import Localized from '@/vue/components/Localized.vue';
@@ -141,7 +140,9 @@ async function rollSkillForActor(actor: GenesysActor, skill: GenesysItem<SkillDa
                 if (!approach) {
                         return;
                 }
-                await DicePrompt.promptForRoll(actor, skill.name, { rollUnskilled: approach });
+                await DicePrompt.promptForRoll(actor, skill.name, {
+                        rollUnskilled: approach as Approach,
+                });
         }
 }
 

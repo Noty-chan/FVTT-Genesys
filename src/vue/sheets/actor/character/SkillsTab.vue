@@ -20,7 +20,6 @@ import GenesysRoller from '@/dice/GenesysRoller';
 import ContextMenu from '@/vue/components/ContextMenu.vue';
 import MenuItem from '@/vue/components/MenuItem.vue';
 import MasonryWall from '@yeger/vue-masonry-wall';
-import { Approach } from '@/data/Approaches';
 
 const context = inject<ActorSheetContext<CharacterDataModel, CharacterSheet>>(RootContext)!;
 const system = computed(() => context.data.actor.systemData);
@@ -63,12 +62,26 @@ const deleteLabel = game.i18n.localize('Genesys.Labels.Delete');
 const addSkillLabel = game.i18n.localize('Genesys.Labels.AddSkill');
 
 async function addSkill() {
-        const skill = await toRaw(context.sheet).createSkill(
-                { name: addSkillLabel, type: 'skill' } as unknown as foundry.data.ItemSource<
-                        'skill',
-                        SkillDataModel['_source']
-                >,
-        );
+        const stubSkill: foundry.data.ItemSource<'skill', SkillDataModel['_source']> = {
+                _id: foundry.utils.randomID(),
+                name: addSkillLabel,
+                type: 'skill',
+                img: 'icons/svg/book.svg',
+                system: {
+                        description: '',
+                        source: '',
+                        category: 'general',
+                        initiative: false,
+                        career: false,
+                        rank: 0,
+                },
+                effects: [],
+                ownership: { default: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER },
+                sort: 0,
+                folder: null,
+                flags: {},
+        };
+        const skill = await toRaw(context.sheet).createSkill(stubSkill);
         await skill?.sheet?.render(true);
 }
 
