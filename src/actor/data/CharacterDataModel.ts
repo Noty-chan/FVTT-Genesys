@@ -83,6 +83,9 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
        abstract encumbrance: Encumbrance;
        abstract currency: number;
        abstract resource: number;
+       abstract resourceName: string;
+       abstract xp: number;
+       abstract xpHistory: { amount: number; note?: string; target?: string }[];
        abstract abilities: NarrativeAbility[];
        abstract notes: string;
 	abstract superCharacteristics: Set<Characteristic>;
@@ -235,6 +238,32 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
                 });
         }
 
+        async gainXP(amount: number, note?: string) {
+                await (this.parent as unknown as Actor).update({
+                        'system.xp': this.xp + amount,
+                        'system.xpHistory': [
+                                ...this.xpHistory,
+                                { amount, note },
+                        ],
+                });
+        }
+
+        async spendXP(amount: number, target?: string, note?: string) {
+                if (this.xp < amount) {
+                        return false;
+                }
+
+                await (this.parent as unknown as Actor).update({
+                        'system.xp': this.xp - amount,
+                        'system.xpHistory': [
+                                ...this.xpHistory,
+                                { amount: -amount, target, note },
+                        ],
+                });
+
+                return true;
+        }
+
 	get talentPyramidTotals() {
 		const allTalents = (<CharacterActor>(<unknown>this.parent)).items.filter((i) => i.type === 'talent') as GenesysItem<TalentDataModel>[];
 		return allTalents.reduce(
@@ -266,18 +295,18 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 		);
 	}
 
-	get canPurchaseCharacteristicAdvance(): { brawn: boolean; agility: boolean; intellect: boolean; cunning: boolean; willpower: boolean; presence: boolean } {
-		const availableXP = this.availableStartingXP;
+        get canPurchaseCharacteristicAdvance(): { brawn: boolean; agility: boolean; intellect: boolean; cunning: boolean; willpower: boolean; presence: boolean } {
+                const availableXP = this.xp;
 
-		return {
-			brawn: this.characteristics.brawn < 5 && availableXP >= (this.characteristics.brawn + 1) * 10,
-			agility: this.characteristics.agility < 5 && availableXP >= (this.characteristics.agility + 1) * 10,
-			intellect: this.characteristics.intellect < 5 && availableXP >= (this.characteristics.intellect + 1) * 10,
-			cunning: this.characteristics.cunning < 5 && availableXP >= (this.characteristics.cunning + 1) * 10,
-			willpower: this.characteristics.willpower < 5 && availableXP >= (this.characteristics.willpower + 1) * 10,
-			presence: this.characteristics.presence < 5 && availableXP >= (this.characteristics.presence + 1) * 10,
-		};
-	}
+                return {
+                        brawn: this.characteristics.brawn < 5 && availableXP >= (this.characteristics.brawn + 1) * 10,
+                        agility: this.characteristics.agility < 5 && availableXP >= (this.characteristics.agility + 1) * 10,
+                        intellect: this.characteristics.intellect < 5 && availableXP >= (this.characteristics.intellect + 1) * 10,
+                        cunning: this.characteristics.cunning < 5 && availableXP >= (this.characteristics.cunning + 1) * 10,
+                        willpower: this.characteristics.willpower < 5 && availableXP >= (this.characteristics.willpower + 1) * 10,
+                        presence: this.characteristics.presence < 5 && availableXP >= (this.characteristics.presence + 1) * 10,
+                };
+        }
 
 	#additionalEncumbranceThreshold() {
 		return (<CharacterActor>(<unknown>this.parent)).items
@@ -458,6 +487,15 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 			}),
                         currency: new fields.NumberField({ initial: 500 }),
                         resource: new fields.NumberField({ integer: true, initial: 0 }),
+                        resourceName: new fields.StringField(),
+                        xp: new fields.NumberField({ integer: true, initial: 0 }),
+                        xpHistory: new fields.ArrayField(
+                                new fields.SchemaField({
+                                        amount: new fields.NumberField({ integer: true, initial: 0 }),
+                                        note: new fields.StringField(),
+                                        target: new fields.StringField(),
+                                }),
+                        ),
                         abilities: new fields.ArrayField(
                                 new fields.SchemaField({
                                         name: new fields.StringField(),
