@@ -124,25 +124,25 @@ onBeforeUpdate(updateEffects);
 
 // Container for the character's secondary combat stats (wounds, resource, etc.)
 .combat-stat-row {
-	// By default, evenly space the items across the full sheet width.
-	display: flex;
-	gap: 1em;
-	align-items: center;
-	justify-content: space-around;
+    // By default, evenly space the items across the full sheet width.
+    display: flex;
+    gap: 1em;
+    align-items: center;
+    justify-content: space-around;
 
-	// When the sheet is wider than 700px, simply center the stat boxes.
-	@container sheet (min-width: 700px) {
-		display: flex;
-		justify-content: center;
+    // When the sheet is wider than 700px, просто центрируем stat boxes.
+    @container sheet (min-width: 700px) {
+        display: flex;
+        justify-content: center;
 
-		.combat-stat {
-			width: 165px;
+        .combat-stat {
+            width: 165px;
         }
+    }
 }
 
 .resources {
-        display: flex;
-        justify-content: center;
-        gap: 1em;
+    display: flex;
+    justify-content: center;
+    gap: 1em;
 }
-</style>
