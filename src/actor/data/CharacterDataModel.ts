@@ -84,8 +84,12 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
        abstract currency: number;
        abstract resource: number;
        abstract resourceName: string;
+       abstract contacts: number;
+       abstract intel: number;
+       abstract will: number;
        abstract xp: number;
        abstract xpHistory: { amount: number; note?: string; target?: string }[];
+       abstract resourceHistory: { resource: string; amount: number; note?: string }[];
        abstract abilities: NarrativeAbility[];
        abstract notes: string;
 	abstract superCharacteristics: Set<Characteristic>;
@@ -263,6 +267,84 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 
                 return true;
         }
+
+       async gainContacts(amount: number, note?: string) {
+               await (this.parent as unknown as Actor).update({
+                       'system.contacts': this.contacts + amount,
+                       'system.resourceHistory': [
+                               ...this.resourceHistory,
+                               { resource: 'contacts', amount, note },
+                       ],
+               });
+       }
+
+       async spendContacts(amount: number, note?: string) {
+               if (this.contacts < amount) {
+                       return false;
+               }
+
+               await (this.parent as unknown as Actor).update({
+                       'system.contacts': this.contacts - amount,
+                       'system.resourceHistory': [
+                               ...this.resourceHistory,
+                               { resource: 'contacts', amount: -amount, note },
+                       ],
+               });
+
+               return true;
+       }
+
+       async gainIntel(amount: number, note?: string) {
+               await (this.parent as unknown as Actor).update({
+                       'system.intel': this.intel + amount,
+                       'system.resourceHistory': [
+                               ...this.resourceHistory,
+                               { resource: 'intel', amount, note },
+                       ],
+               });
+       }
+
+       async spendIntel(amount: number, note?: string) {
+               if (this.intel < amount) {
+                       return false;
+               }
+
+               await (this.parent as unknown as Actor).update({
+                       'system.intel': this.intel - amount,
+                       'system.resourceHistory': [
+                               ...this.resourceHistory,
+                               { resource: 'intel', amount: -amount, note },
+                       ],
+               });
+
+               return true;
+       }
+
+       async gainWill(amount: number, note?: string) {
+               await (this.parent as unknown as Actor).update({
+                       'system.will': this.will + amount,
+                       'system.resourceHistory': [
+                               ...this.resourceHistory,
+                               { resource: 'will', amount, note },
+                       ],
+               });
+       }
+
+       async spendWill(amount: number, note?: string) {
+               if (this.will < amount) {
+                       return false;
+               }
+
+               await (this.parent as unknown as Actor).update({
+                       'system.will': this.will - amount,
+                       'system.resourceHistory': [
+                               ...this.resourceHistory,
+                               { resource: 'will', amount: -amount, note },
+                       ],
+               });
+
+               return true;
+       }
 
 	get talentPyramidTotals() {
 		const allTalents = (<CharacterActor>(<unknown>this.parent)).items.filter((i) => i.type === 'talent') as GenesysItem<TalentDataModel>[];
@@ -486,21 +568,31 @@ export default abstract class CharacterDataModel extends foundry.abstract.DataMo
 				threshold: new fields.NumberField({ integer: true, initial: 0 }),
 			}),
                         currency: new fields.NumberField({ initial: 500 }),
-                        resource: new fields.NumberField({ integer: true, initial: 0 }),
-                        resourceName: new fields.StringField(),
-                        xp: new fields.NumberField({ integer: true, initial: 0 }),
-                        xpHistory: new fields.ArrayField(
-                                new fields.SchemaField({
-                                        amount: new fields.NumberField({ integer: true, initial: 0 }),
-                                        note: new fields.StringField(),
-                                        target: new fields.StringField(),
-                                }),
-                        ),
-                        abilities: new fields.ArrayField(
-                                new fields.SchemaField({
-                                        name: new fields.StringField(),
-                                        description: new fields.HTMLField(),
-                                        cost: new fields.NumberField({ integer: true, initial: 0 }),
+                       resource: new fields.NumberField({ integer: true, initial: 0 }),
+                       resourceName: new fields.StringField(),
+                       contacts: new fields.NumberField({ integer: true, initial: 0 }),
+                       intel: new fields.NumberField({ integer: true, initial: 0 }),
+                       will: new fields.NumberField({ integer: true, initial: 0 }),
+                       xp: new fields.NumberField({ integer: true, initial: 0 }),
+                       xpHistory: new fields.ArrayField(
+                               new fields.SchemaField({
+                                       amount: new fields.NumberField({ integer: true, initial: 0 }),
+                                       note: new fields.StringField(),
+                                       target: new fields.StringField(),
+                               }),
+                       ),
+                       resourceHistory: new fields.ArrayField(
+                               new fields.SchemaField({
+                                       resource: new fields.StringField(),
+                                       amount: new fields.NumberField({ integer: true, initial: 0 }),
+                                       note: new fields.StringField(),
+                               }),
+                       ),
+                       abilities: new fields.ArrayField(
+                               new fields.SchemaField({
+                                       name: new fields.StringField(),
+                                       description: new fields.HTMLField(),
+                                       cost: new fields.NumberField({ integer: true, initial: 0 }),
                                 }),
                         ),
                         superCharacteristics: new fields.SetField(new fields.StringField()),
